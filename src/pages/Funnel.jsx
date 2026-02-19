@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { identifyChatbaseUser } from '../components/ChatbaseWidget';
 
 const STEPS = [
   {
@@ -224,6 +225,10 @@ export default function Funnel() {
   const handleSubmit = () => {
     // TODO: Send formData to your backend/CRM
     console.log('Lead Data:', formData);
+
+    // Identify user with Chatbase so the chatbot knows who they are
+    identifyChatbaseUser(formData);
+
     setAnimKey(k => k + 1);
     setSubmitted(true);
   };
