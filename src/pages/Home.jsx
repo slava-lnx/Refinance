@@ -137,7 +137,6 @@ function CalcPreview() {
 const trustItems = [
   { icon: '🔒', text: '256-bit SSL Encrypted' },
   { icon: '✓', text: 'NMLS Licensed' },
-  { icon: '⭐', text: 'A+ BBB Rating' },
   { icon: '🏦', text: '25+ Lender Partners' },
   { icon: '💰', text: '100% Free Service' },
 ];
