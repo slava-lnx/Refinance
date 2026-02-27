@@ -11,10 +11,26 @@ const STEPS = [
     subtitle: 'This helps our AI match you with the right lenders.',
     type: 'options',
     options: [
-      { icon: '📉', label: 'Lower my monthly payment', value: 'lower-payment' },
-      { icon: '💰', label: 'Cash out home equity', value: 'cash-out' },
-      { icon: '⏱️', label: 'Shorten my loan term', value: 'shorten-term' },
-      { icon: '🔄', label: 'Consolidate debt', value: 'consolidate' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+        </svg>
+      ), label: 'Lower my monthly payment', value: 'lower-payment' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+      ), label: 'Cash out home equity', value: 'cash-out' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      ), label: 'Shorten my loan term', value: 'shorten-term' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+        </svg>
+      ), label: 'Consolidate debt', value: 'consolidate' },
     ],
   },
   {
@@ -36,10 +52,27 @@ const STEPS = [
     subtitle: 'Select the type that best describes your home.',
     type: 'options',
     options: [
-      { icon: '🏠', label: 'Single Family Home', value: 'single-family' },
-      { icon: '🏢', label: 'Condo / Townhome', value: 'condo' },
-      { icon: '🏘️', label: 'Multi-Family (2-4 units)', value: 'multi-family' },
-      { icon: '📦', label: 'Manufactured Home', value: 'manufactured' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 11 12 2 2 11"/><path d="M6 11v9a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-9"/>
+        </svg>
+      ), label: 'Single Family Home', value: 'single-family' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="2" x2="10" y2="22"/>
+        </svg>
+      ), label: 'Condo / Townhome', value: 'condo' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="22 11 12 2 2 11"/><path d="M6 11v9a1 1 0 001 1h3v-4h4v4h3a1 1 0 001-1v-9"/><line x1="12" y1="2" x2="12" y2="2"/>
+          <polyline points="18 8 22 11"/>
+        </svg>
+      ), label: 'Multi-Family (2-4 units)', value: 'multi-family' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="8" width="20" height="12" rx="1"/><polyline points="2 14 22 14"/><line x1="6" y1="8" x2="6" y2="4"/><line x1="18" y1="8" x2="18" y2="4"/>
+        </svg>
+      ), label: 'Manufactured Home', value: 'manufactured' },
     ],
   },
   {
@@ -63,10 +96,26 @@ const STEPS = [
     subtitle: "This won't affect your credit. We just need a range.",
     type: 'options',
     options: [
-      { icon: '🟢', label: 'Excellent (740+)', value: 'excellent' },
-      { icon: '🔵', label: 'Good (680–739)', value: 'good' },
-      { icon: '🟡', label: 'Fair (620–679)', value: 'fair' },
-      { icon: '🔴', label: 'Below 620', value: 'poor' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      ), label: 'Excellent (740+)', value: 'excellent' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      ), label: 'Good (680–739)', value: 'good' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      ), label: 'Fair (620–679)', value: 'fair' },
+      { icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      ), label: 'Below 620', value: 'poor' },
     ],
   },
   {
@@ -142,7 +191,7 @@ function OptionStep({ step, formData, onSelect }) {
   );
 }
 
-function FormStep({ step, formData, onChange }) {
+function FormStep({ step, formData, onChange, errors = {} }) {
   return (
     <>
       {step.fields.map(field => (
@@ -152,6 +201,7 @@ function FormStep({ step, formData, onChange }) {
             <select
               value={formData[field.name] || ''}
               onChange={e => onChange(field.name, e.target.value)}
+              style={errors[field.name] ? { borderColor: '#EF4444' } : {}}
             >
               {field.options.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -164,7 +214,13 @@ function FormStep({ step, formData, onChange }) {
               maxLength={field.maxLength}
               value={formData[field.name] || ''}
               onChange={e => onChange(field.name, e.target.value)}
+              style={errors[field.name] ? { borderColor: '#EF4444' } : {}}
             />
+          )}
+          {errors[field.name] && (
+            <span style={{ display: 'block', marginTop: 4, fontSize: '0.78rem', color: '#EF4444' }}>
+              {errors[field.name]}
+            </span>
           )}
         </div>
       ))}
@@ -178,8 +234,8 @@ function ConsentBlock({ agreed, onChange }) {
       <label className="consent-label">
         <input type="checkbox" checked={agreed} onChange={e => onChange(e.target.checked)} />
         <span>
-          By submitting, I agree to the <a href="#" onClick={e => e.preventDefault()}>Terms of Service</a> and{' '}
-          <a href="#" onClick={e => e.preventDefault()}>Privacy Policy</a>, and consent to be contacted by
+          By submitting, I agree to the <Link to="/terms-of-service" target="_blank">Terms of Service</Link> and{' '}
+          <Link to="/privacy-policy" target="_blank">Privacy Policy</Link>, and consent to be contacted by
           GetMyRefinance and its lending partners by phone, email, or text at the number provided, including
           via automated technology. This is not a condition of purchase. Msg & data rates may apply.
         </span>
@@ -191,7 +247,11 @@ function ConsentBlock({ agreed, onChange }) {
 function AIMatchingMessage() {
   return (
     <div className="ai-matching">
-      <div className="ai-matching-icon">🤖</div>
+      <div className="ai-matching-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M8 14s1.5 2 4 2 4-2 4-2"/>
+        </svg>
+      </div>
       <span>
         Our AI analyzes your profile against <strong>25+ lender programs</strong> to find you the best possible offer — in seconds, not days.
       </span>
@@ -204,11 +264,31 @@ function ProcessingScreen() {
   const [progress, setProgress] = useState(0);
 
   const phases = [
-    { text: 'Analyzing your profile...', icon: '📊' },
-    { text: 'Scanning 25+ lender programs...', icon: '🔍' },
-    { text: 'Comparing rates & terms...', icon: '📈' },
-    { text: 'Finding your best match...', icon: '🎯' },
-    { text: 'Preparing your results...', icon: '✨' },
+    { text: 'Analyzing your profile...', icon: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+      </svg>
+    )},
+    { text: 'Scanning 25+ lender programs...', icon: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    )},
+    { text: 'Comparing rates & terms...', icon: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+      </svg>
+    )},
+    { text: 'Finding your best match...', icon: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+      </svg>
+    )},
+    { text: 'Preparing your results...', icon: (
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    )},
   ];
 
   useState(() => {
@@ -317,7 +397,11 @@ function ProcessingScreen() {
 function SuccessScreen() {
   return (
     <div style={{ textAlign: 'center', padding: '20px 0' }}>
-      <div style={{ fontSize: '4rem', marginBottom: 16 }}>🎉</div>
+      <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
       <h2 style={{ marginBottom: 12 }}>You're All Set!</h2>
       <p style={{ marginBottom: 12, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
         Our AI is analyzing your profile and matching you with lenders right now.
@@ -350,6 +434,33 @@ function SuccessScreen() {
   );
 }
 
+/* --- Validation --- */
+const validators = {
+  email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Please enter a valid email address.',
+  phone: v => /^\+?[\d\s\-().]{7,15}$/.test(v.trim()) || 'Please enter a valid phone number.',
+  zip_code: v => /^\d{5}$/.test(v.trim()) || 'Please enter a valid 5-digit ZIP code.',
+  home_value: v => v.trim().length > 0 || 'Please enter your estimated home value.',
+  mortgage_balance: v => v.trim().length > 0 || 'Please enter your current mortgage balance.',
+  current_rate: v => v.trim().length > 0 || 'Please enter your current interest rate.',
+  first_name: v => v.trim().length > 0 || 'Please enter your first name.',
+  last_name: v => v.trim().length > 0 || 'Please enter your last name.',
+};
+
+function validateStep(step, formData) {
+  const errors = {};
+  if (step.type === 'form') {
+    for (const field of step.fields) {
+      const value = formData[field.name] || '';
+      const validate = validators[field.name];
+      if (validate) {
+        const result = validate(value);
+        if (result !== true) errors[field.name] = result;
+      }
+    }
+  }
+  return errors;
+}
+
 /* --- Main Funnel Component --- */
 export default function Funnel() {
   const location = useLocation();
@@ -375,6 +486,7 @@ export default function Funnel() {
   const [processing, setProcessing] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const [consentAgreed, setConsentAgreed] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const goTo = useCallback((idx) => {
     setAnimKey(k => k + 1);
@@ -383,6 +495,15 @@ export default function Funnel() {
 
   const handleFieldChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+    if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+    // TODO: Re-engagement email — when the user enters their email on step 2 and then
+    // abandons the funnel, trigger an automated follow-up sequence via your email service
+    // (e.g. Mailchimp, SendGrid). Fire a POST to your backend here with `name` === 'email'
+    // and `value` as the address captured, along with any formData already collected.
+    // Example:
+    //   if (name === 'email' && value.includes('@')) {
+    //     fetch('/api/leads/partial', { method: 'POST', body: JSON.stringify({ email: value }) });
+    //   }
   };
 
   const handleOptionSelect = (stepId, value) => {
@@ -392,7 +513,16 @@ export default function Funnel() {
     }, 300);
   };
 
+  const advanceStep = () => {
+    const errors = validateStep(STEPS[currentStep], formData);
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    setFieldErrors({});
+    goTo(currentStep + 1);
+  };
+
   const handleSubmit = () => {
+    const errors = validateStep(STEPS[currentStep], formData);
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
     if (!consentAgreed) {
       alert('Please agree to the Terms of Service and Privacy Policy to continue.');
       return;
@@ -456,7 +586,7 @@ export default function Funnel() {
               {step.type === 'options' ? (
                 <OptionStep step={step} formData={formData} onSelect={handleOptionSelect} />
               ) : (
-                <FormStep step={step} formData={formData} onChange={handleFieldChange} />
+                <FormStep step={step} formData={formData} onChange={handleFieldChange} errors={fieldErrors} />
               )}
 
               {/* Consent on final step */}
@@ -477,7 +607,7 @@ export default function Funnel() {
                       See My Rates →
                     </button>
                   ) : (
-                    <button className="btn btn-primary" onClick={() => goTo(currentStep + 1)}>
+                    <button className="btn btn-primary" onClick={advanceStep}>
                       Continue →
                     </button>
                   )

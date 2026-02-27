@@ -27,7 +27,6 @@ export default function Header() {
           <NavLink to="/loans" onClick={closeMenu}>Loan Options</NavLink>
           <NavLink to="/calculator" onClick={closeMenu}>Calculators</NavLink>
           <NavLink to="/learn" onClick={closeMenu}>Learning Center</NavLink>
-          <NavLink to="/about" onClick={closeMenu}>About</NavLink>
           <Link to="/get-started" className="btn btn-primary btn-nav nav-cta" onClick={closeMenu}>
             Get Started
           </Link>

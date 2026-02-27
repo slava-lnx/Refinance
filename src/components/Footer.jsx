@@ -7,12 +7,12 @@ export default function Footer({ minimal = false }) {
         <div className="container">
           <div className="footer-bottom" style={{ border: 'none', paddingTop: 0 }}>
             <div className="footer-legal">
-              GetMyRefinance is a product of Slava LLC. NMLS #[OLIVER].
+              GetMyRefinance is a product of Slava LLC. NMLS #{/* TODO: Replace with real NMLS number */}[PENDING].
               Not acting as a lender or broker. Equal Housing Opportunity.
             </div>
             <div className="footer-links">
-              <a href="#">Privacy</a>
-              <a href="#">Terms</a>
+              <Link to="/privacy-policy">Privacy</Link>
+              <Link to="/terms-of-service">Terms</Link>
               <Link to="/">Home</Link>
             </div>
           </div>
@@ -57,16 +57,15 @@ export default function Footer({ minimal = false }) {
           <div className="footer-col">
             <h4>Company</h4>
             <ul>
-              <li><Link to="/about">About Us</Link></li>
               <li><Link to="/learn">Learning Center</Link></li>
               <li><a href="#">Contact Us</a></li>
-              <li><a href="#">Careers</a></li>
             </ul>
           </div>
         </div>
         <div className="footer-bottom">
           <div className="footer-legal">
-            GetMyRefinance is a product of Slava LLC. NMLS #[Oliver].
+            {/* TODO: Replace [PENDING] with your real NMLS license number */}
+            GetMyRefinance is a product of Slava LLC. NMLS #[PENDING].
             GetMyRefinance is not acting as a lender or broker. The information provided
             is not an application for a mortgage loan. If contacted by a lender in our
             network, your quoted rate may vary depending on your property location, credit
@@ -74,9 +73,8 @@ export default function Footer({ minimal = false }) {
             available in all states. Equal Housing Opportunity.
           </div>
           <div className="footer-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Use</a>
-            <a href="#">NMLS Licensing</a>
+            <Link to="/privacy-policy">Privacy Policy</Link>
+            <Link to="/terms-of-service">Terms of Use</Link>
           </div>
         </div>
       </div>

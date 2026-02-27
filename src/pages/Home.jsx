@@ -135,10 +135,26 @@ function CalcPreview() {
 }
 
 const trustItems = [
-  { icon: '🔒', text: '256-bit SSL Encrypted' },
-  { icon: '✓', text: 'NMLS Licensed' },
-  { icon: '🏦', text: '25+ Lender Partners' },
-  { icon: '💰', text: '100% Free Service' },
+  { icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  ), text: '256-bit SSL Encrypted' },
+  { icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ), text: 'NMLS Licensed' },
+  { icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+    </svg>
+  ), text: '25+ Lender Partners' },
+  { icon: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+    </svg>
+  ), text: '100% Free Service' },
 ];
 
 const steps = [
@@ -148,19 +164,59 @@ const steps = [
 ];
 
 const values = [
-  { icon: '🏆', title: 'Vetted Lender Network', desc: 'Every lender in our network is licensed, reviewed, and held to strict quality standards.' },
-  { icon: '⚡', title: 'Instant Rate Comparison', desc: 'See personalized rates from multiple lenders in minutes — no lengthy applications required.' },
-  { icon: '🎯', title: 'Personalized Matching', desc: 'Our algorithm matches your profile with lenders most likely to offer you the best deal.' },
-  { icon: '🔒', title: 'Your Data, Protected', desc: 'Bank-level encryption and strict privacy policies ensure your information stays secure.' },
-  { icon: '💰', title: 'Always Free', desc: 'Our service is completely free. We\'re paid by lenders, never by you.' },
-  { icon: '📞', title: 'Expert Guidance', desc: 'Our team of mortgage specialists is here to answer questions at every step of the process.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 11 12 2 2 11"/><path d="M6 11v9a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-9"/>
+    </svg>
+  ), title: 'Vetted Lender Network', desc: 'Every lender in our network is licensed, reviewed, and held to strict quality standards.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+    </svg>
+  ), title: 'Instant Rate Comparison', desc: 'See personalized rates from multiple lenders in minutes — no lengthy applications required.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  ), title: 'Personalized Matching', desc: 'Our algorithm matches your profile with lenders most likely to offer you the best deal.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+    </svg>
+  ), title: 'Your Data, Protected', desc: 'Bank-level encryption and strict privacy policies ensure your information stays secure.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+    </svg>
+  ), title: 'Always Free', desc: 'Our service is completely free. We\'re paid by lenders, never by you.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.1 1.18 2 2 0 012.08 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+    </svg>
+  ), title: 'Expert Guidance', desc: 'Our team of mortgage specialists is here to answer questions at every step of the process.' },
 ];
 
 const loanTypes = [
-  { icon: '🏠', title: 'Rate & Term Refinance', desc: 'Replace your current mortgage with a new one at better terms or a lower rate.' },
-  { icon: '💵', title: 'Cash-Out Refinance', desc: 'Tap into your home equity for renovations, debt consolidation, or major expenses.' },
-  { icon: '🎖️', title: 'VA Refinance', desc: 'Exclusive refinance options for veterans and active-duty service members.' },
-  { icon: '🏛️', title: 'FHA Streamline', desc: 'Simplified refinancing for existing FHA loan holders with less paperwork.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 11 12 2 2 11"/><path d="M6 11v9a1 1 0 001 1h4v-4h2v4h4a1 1 0 001-1v-9"/>
+    </svg>
+  ), title: 'Rate & Term Refinance', desc: 'Replace your current mortgage with a new one at better terms or a lower rate.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+    </svg>
+  ), title: 'Cash-Out Refinance', desc: 'Tap into your home equity for renovations, debt consolidation, or major expenses.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
+  ), title: 'VA Refinance', desc: 'Exclusive refinance options for veterans and active-duty service members.' },
+  { icon: (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><path d="M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z"/>
+    </svg>
+  ), title: 'FHA Streamline', desc: 'Simplified refinancing for existing FHA loan holders with less paperwork.' },
 ];
 
 const testimonials = [

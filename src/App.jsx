@@ -9,8 +9,8 @@ import Calculator from './pages/Calculator';
 import Refinance from './pages/Refinance';
 import Loans from './pages/Loans';
 import Learn from './pages/Learn';
-import About from './pages/About';
-
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 export default function App() {
   return (
     <>
@@ -32,7 +32,8 @@ export default function App() {
                 <Route path="/refinance" element={<Refinance />} />
                 <Route path="/loans" element={<Loans />} />
                 <Route path="/learn" element={<Learn />} />
-                <Route path="/about" element={<About />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
               </Routes>
               <Footer />
             </>
