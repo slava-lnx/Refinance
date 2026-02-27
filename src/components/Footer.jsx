@@ -7,7 +7,6 @@ export default function Footer({ minimal = false }) {
         <div className="container">
           <div className="footer-bottom" style={{ border: 'none', paddingTop: 0 }}>
             <div className="footer-legal">
-              GetMyRefinance is a product of Slava LLC. NMLS #{/* TODO: Replace with real NMLS number */}[PENDING].
               Not acting as a lender or broker. Equal Housing Opportunity.
             </div>
             <div className="footer-links">
@@ -69,8 +68,6 @@ export default function Footer({ minimal = false }) {
         </div>
         <div className="footer-bottom">
           <div className="footer-legal">
-            {/* TODO: Replace [PENDING] with your real NMLS license number */}
-            GetMyRefinance is a product of Slava LLC. NMLS #[PENDING].
             GetMyRefinance is not acting as a lender or broker. The information provided
             is not an application for a mortgage loan. If contacted by a lender in our
             network, your quoted rate may vary depending on your property location, credit

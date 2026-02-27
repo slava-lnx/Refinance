@@ -1,7 +1,6 @@
 import PageHero from '../components/PageHero';
 
 const LAST_UPDATED = 'February 27, 2026';
-const COMPANY = 'Slava LLC';
 const SITE = 'GetMyRefinance';
 const EMAIL = 'privacy@getmyrefinance.com'; // TODO: update to real privacy contact email
 
@@ -19,7 +18,7 @@ export default function PrivacyPolicy() {
 
             <Section title="1. Introduction">
               <p>
-                {COMPANY} ("we," "us," or "our") operates the {SITE} platform located at getmyrefinance.com
+                {SITE} ("we," "us," or "our") operates the {SITE} platform located at getmyrefinance.com
                 (the "Site"). This Privacy Policy explains how we collect, use, disclose, and safeguard your
                 information when you visit our Site or submit information through our mortgage refinance
                 matching service.
@@ -85,7 +84,7 @@ export default function PrivacyPolicy() {
             <Section title="5. Consent to Be Contacted">
               <p>
                 By submitting your information through our Site, you expressly consent to be contacted by
-                {COMPANY}, {SITE}, and our lending partners by telephone, email, text message, or automated
+                {SITE}, {SITE}, and our lending partners by telephone, email, text message, or automated
                 dialing systems at the number or address you provide, even if your number is on a Do Not
                 Call registry. This consent is not a condition of any purchase. Standard message and data
                 rates may apply. You may opt out at any time by contacting us at {EMAIL}.
@@ -169,7 +168,7 @@ export default function PrivacyPolicy() {
                 If you have questions or concerns about this Privacy Policy, please contact us:
               </p>
               <p>
-                <strong>{COMPANY} — {SITE}</strong><br />
+                <strong>{SITE}</strong><br />
                 Email: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
                 {/* TODO: Add mailing address once available */}
               </p>

@@ -1,7 +1,6 @@
 import PageHero from '../components/PageHero';
 
 const LAST_UPDATED = 'February 27, 2026';
-const COMPANY = 'Slava LLC';
 const SITE = 'GetMyRefinance';
 const EMAIL = 'legal@getmyrefinance.com'; // TODO: update to real legal contact email
 
@@ -24,7 +23,7 @@ export default function TermsOfService() {
                 Policy. These Terms apply to all visitors, users, and others who access or use the Site.
               </p>
               <p>
-                If you do not agree to these Terms, please do not access or use the Site. {COMPANY}
+                If you do not agree to these Terms, please do not access or use the Site. {SITE}
                 reserves the right to update these Terms at any time. Continued use of the Site after
                 changes constitutes acceptance of the revised Terms.
               </p>
@@ -77,7 +76,7 @@ export default function TermsOfService() {
             <Section title="6. Consent to Contact">
               <p>
                 By submitting a form on this Site, you expressly consent to be contacted by {SITE},
-                {COMPANY}, and our lending partners via telephone calls, emails, text messages, and
+                {SITE}, and our lending partners via telephone calls, emails, text messages, and
                 pre-recorded or autodialed messages at the contact information you provide. This consent
                 is not required as a condition of obtaining any services. Standard carrier message and
                 data rates may apply. You may opt out at any time by contacting us at {EMAIL}.
@@ -101,7 +100,7 @@ export default function TermsOfService() {
             <Section title="8. Intellectual Property">
               <p>
                 All content on the Site — including text, graphics, logos, icons, images, and software —
-                is the property of {COMPANY} or its licensors and is protected by applicable intellectual
+                is the property of {SITE} or its licensors and is protected by applicable intellectual
                 property laws. You may not reproduce, distribute, or create derivative works without our
                 express written consent.
               </p>
@@ -118,7 +117,7 @@ export default function TermsOfService() {
 
             <Section title="10. Limitation of Liability">
               <p>
-                TO THE FULLEST EXTENT PERMITTED BY LAW, {COMPANY.toUpperCase()} SHALL NOT BE LIABLE FOR
+                TO THE FULLEST EXTENT PERMITTED BY LAW, {SITE.toUpperCase()} SHALL NOT BE LIABLE FOR
                 ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOST
                 PROFITS OR DATA, ARISING FROM YOUR USE OF THE SITE OR SERVICES, EVEN IF WE HAVE BEEN
                 ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. OUR TOTAL LIABILITY SHALL NOT EXCEED $100.
@@ -127,7 +126,7 @@ export default function TermsOfService() {
 
             <Section title="11. Indemnification">
               <p>
-                You agree to indemnify, defend, and hold harmless {COMPANY}, its officers, directors,
+                You agree to indemnify, defend, and hold harmless {SITE}, its officers, directors,
                 employees, and agents from and against any claims, liabilities, damages, losses, and
                 expenses (including reasonable attorneys' fees) arising from your use of the Site,
                 violation of these Terms, or infringement of any third-party rights.
@@ -166,7 +165,7 @@ export default function TermsOfService() {
                 If you have questions about these Terms of Service, please contact us:
               </p>
               <p>
-                <strong>{COMPANY} — {SITE}</strong><br />
+                <strong>{SITE}</strong><br />
                 Email: <a href={`mailto:${EMAIL}`}>{EMAIL}</a>
                 {/* TODO: Add mailing address once available */}
               </p>
