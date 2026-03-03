@@ -189,6 +189,7 @@ const STEPS = [
     subtitle: 'Rates vary by location \u2014 this helps us find local offers.',
     type: 'form',
     fields: [
+      { name: 'address', label: 'Street Address', type: 'text', placeholder: '123 Main St', autoComplete: 'street-address', enterKeyHint: 'next' },
       { name: 'zip_code', label: 'Property ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'next' },
     ],
   },
@@ -277,40 +278,53 @@ function OptionStep({ step, formData, onSelect }) {
    Form Step (accessible, masked inputs, blur validation)
    ============================================================ */
 
-function FormStep({ step, formData, onChange, onBlur, errors = {}, emailSuggestion, onAcceptEmailSuggestion, firstFieldRef }) {
+function FormStep({ step, formData, onChange, onBlur, errors = {}, validated = {}, emailSuggestion, onAcceptEmailSuggestion, firstFieldRef }) {
   return (
     <>
-      {step.fields.map((field, idx) => (
-        <div key={field.name} className={`form-group${errors[field.name] ? ' has-error' : ''}`}>
-          <label htmlFor={`field-${field.name}`}>{field.label}</label>
-          <input
-            ref={idx === 0 ? firstFieldRef : undefined}
-            id={`field-${field.name}`}
-            type={field.type}
-            placeholder={field.placeholder}
-            maxLength={field.maxLength}
-            value={formData[field.name] || ''}
-            onChange={e => onChange(field.name, e.target.value)}
-            onBlur={() => onBlur(field.name)}
-            autoComplete={field.autoComplete || 'off'}
-            inputMode={field.inputMode}
-            enterKeyHint={field.enterKeyHint}
-            aria-invalid={errors[field.name] ? 'true' : undefined}
-            aria-describedby={errors[field.name] ? `error-${field.name}` : undefined}
-            style={errors[field.name] ? { borderColor: '#EF4444' } : undefined}
-          />
-          {errors[field.name] && (
-            <span id={`error-${field.name}`} className="field-error" role="alert">
-              {errors[field.name]}
-            </span>
-          )}
-          {field.name === 'email' && emailSuggestion && !errors[field.name] && (
-            <button type="button" className="email-suggestion" onClick={onAcceptEmailSuggestion}>
-              {emailSuggestion}
-            </button>
-          )}
-        </div>
-      ))}
+      {step.fields.map((field, idx) => {
+        const hasError = !!errors[field.name];
+        const isValid = !hasError && !!validated[field.name];
+        return (
+          <div key={field.name} className={`form-group${hasError ? ' has-error' : ''}${isValid ? ' has-valid' : ''}`}>
+            <label htmlFor={`field-${field.name}`}>{field.label}</label>
+            <div className="input-wrap">
+              <input
+                ref={idx === 0 ? firstFieldRef : undefined}
+                id={`field-${field.name}`}
+                type={field.type}
+                placeholder={field.placeholder}
+                maxLength={field.maxLength}
+                value={formData[field.name] || ''}
+                onChange={e => onChange(field.name, e.target.value)}
+                onBlur={() => onBlur(field.name)}
+                autoComplete={field.autoComplete || 'off'}
+                inputMode={field.inputMode}
+                enterKeyHint={field.enterKeyHint}
+                aria-invalid={hasError ? 'true' : undefined}
+                aria-describedby={hasError ? `error-${field.name}` : undefined}
+                style={hasError ? { borderColor: '#EF4444' } : isValid ? { borderColor: '#10B981' } : undefined}
+              />
+              {isValid && (
+                <span className="field-valid-check" aria-hidden="true">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </span>
+              )}
+            </div>
+            {hasError && (
+              <span id={`error-${field.name}`} className="field-error" role="alert">
+                {errors[field.name]}
+              </span>
+            )}
+            {field.name === 'email' && emailSuggestion && !hasError && (
+              <button type="button" className="email-suggestion" onClick={onAcceptEmailSuggestion}>
+                {emailSuggestion}
+              </button>
+            )}
+          </div>
+        );
+      })}
     </>
   );
 }
@@ -529,42 +543,159 @@ function ProcessingScreen() {
    Success Screen
    ============================================================ */
 
-function SuccessScreen() {
-  return (
-    <div style={{ textAlign: 'center', padding: '20px 0' }}>
-      <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <h2 style={{ marginBottom: 12 }}>You're All Set!</h2>
-      <p style={{ marginBottom: 12, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
-        Our AI is analyzing your profile and matching you with lenders right now.
-      </p>
-      <p style={{ marginBottom: 32, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto', fontSize: '0.9rem' }}>
-        You'll receive personalized refinance offers within minutes.
-      </p>
-      <div style={{
-        background: 'var(--color-bg)', borderRadius: 'var(--radius-md)',
-        padding: 24, marginBottom: 32,
-      }}>
-        <div style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: 12 }}>
-          What happens next:
+function ResultsScreen({ result, formData, onRetry }) {
+  if (!result) return null;
+
+  const { status, buyers, message, errors } = result;
+
+  // OK — matched with buyer(s)
+  if (status === 'OK' && buyers?.length > 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, textAlign: 'left', maxWidth: 380, margin: '0 auto' }}>
-          {[
-            'Our AI scans 25+ lender programs for your best match',
-            'Matched lenders send you personalized rate offers',
-            'You compare and choose \u2014 zero obligation',
-          ].map((text, i) => (
-            <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <span style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '1.1rem' }}>{'\u2713'}</span>
-              <span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>{text}</span>
+        <h2 style={{ marginBottom: 8 }}>Great News, {formData.first_name || 'there'}!</h2>
+        <p style={{ marginBottom: 24, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto' }}>
+          We matched you with {buyers.length} lender{buyers.length > 1 ? 's' : ''} based on your profile.
+          They will be reaching out to you shortly with personalized offers.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+          {buyers.map((buyer, i) => (
+            <div key={i} className="buyer-card">
+              <div className="buyer-card-header">
+                {buyer.logo && buyer.logo !== '-1' && <img src={buyer.logo} alt={buyer.name} className="buyer-logo" />}
+                <strong className="buyer-name">{buyer.name}</strong>
+              </div>
+              {buyer.description && <p className="buyer-desc">{buyer.description}</p>}
+              {(buyer.landingPage || buyer.redirect) && (
+                <a href={buyer.redirect || buyer.landingPage} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ marginTop: 12 }}>
+                  View My Offer
+                </a>
+              )}
             </div>
           ))}
         </div>
+        <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 20, marginBottom: 24 }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: 8 }}>What happens next:</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'left', maxWidth: 380, margin: '0 auto' }}>
+            {['Matched lenders will contact you within minutes', 'Compare their personalized rate offers', 'Choose the best option \u2014 zero obligation'].map((text, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>{'\u2713'}</span>
+                <span style={{ fontSize: '0.88rem', color: 'var(--color-text-light)' }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
       </div>
-      <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+    );
+  }
+
+  // OK but no buyers (shouldn't happen, but handle gracefully)
+  if (status === 'OK') {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2 style={{ marginBottom: 12 }}>You're All Set!</h2>
+        <p style={{ marginBottom: 32, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+          Your information has been submitted. Matched lenders will reach out to you shortly with personalized offers.
+        </p>
+        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+      </div>
+    );
+  }
+
+  // QUALITY_VERIFICATION / QUEUED — pending processing
+  if (status === 'QUALITY_VERIFICATION' || status === 'QUEUED') {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-secondary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h2 style={{ marginBottom: 12 }}>We're Working On It!</h2>
+        <p style={{ marginBottom: 12, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+          {status === 'QUALITY_VERIFICATION'
+            ? 'Your information is being verified. You will receive offers once verification is complete.'
+            : 'We are processing your request. Matched lenders will reach out to you soon.'}
+        </p>
+        <p style={{ marginBottom: 32, fontSize: '0.88rem', color: 'var(--color-text-muted)', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+          Check your email at <strong>{formData.email}</strong> for updates.
+        </p>
+        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+      </div>
+    );
+  }
+
+  // PENDING_MATCH / UNMATCHED — no lender matched
+  if (status === 'PENDING_MATCH' || status === 'UNMATCHED') {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-text-muted)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </div>
+        <h2 style={{ marginBottom: 12 }}>No Matches Right Now</h2>
+        <p style={{ marginBottom: 32, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+          Unfortunately, we couldn't find a matching lender for your profile at this time.
+          Lender availability changes frequently — consider trying again in a few days.
+        </p>
+        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+      </div>
+    );
+  }
+
+  // DUPLICATE — already submitted
+  if (status === 'DUPLICATE') {
+    return (
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: 'var(--color-accent)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <h2 style={{ marginBottom: 12 }}>Already Submitted</h2>
+        <p style={{ marginBottom: 32, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+          It looks like we already have your information on file. The lenders we matched you with
+          previously should be reaching out soon. Check your email and phone for their offers.
+        </p>
+        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+      </div>
+    );
+  }
+
+  // INVALID / INTEGRATION_ERROR / SERVER_ERROR / NETWORK_ERROR / CLIENT_ERROR — errors with retry
+  return (
+    <div style={{ textAlign: 'center', padding: '20px 0' }}>
+      <div style={{ width: 72, height: 72, margin: '0 auto 16px', background: '#EF4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+      </div>
+      <h2 style={{ marginBottom: 12 }}>Something Went Wrong</h2>
+      <p style={{ marginBottom: 24, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
+        {message || 'We encountered an error processing your request. Please try again.'}
+      </p>
+      {errors?.length > 0 && errors[0]?.field && (
+        <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-sm)', padding: 16, marginBottom: 24, textAlign: 'left', maxWidth: 400, margin: '0 auto 24px' }}>
+          <p style={{ fontSize: '0.82rem', fontWeight: 600, marginBottom: 8, color: '#EF4444' }}>Details:</p>
+          {errors.map((err, i) => (
+            <p key={i} style={{ fontSize: '0.82rem', color: 'var(--color-text-light)', marginBottom: 4 }}>
+              {err.field}: {err.type}{err.value ? ` (submitted: "${err.value}")` : ''}
+            </p>
+          ))}
+        </div>
+      )}
+      <button className="btn btn-primary" onClick={onRetry}>Try Again</button>
     </div>
   );
 }
@@ -593,6 +724,11 @@ function ExitIntentModal({ onStay, onLeave }) {
    ============================================================ */
 
 const validators = {
+  address: v => {
+    if (!v.trim()) return 'Please enter your street address.';
+    if (v.trim().length < 5) return 'Please enter a valid street address.';
+    return true;
+  },
   email: v => {
     if (!v.trim()) return 'Please enter your email address.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())) return 'Please enter a valid email address.';
@@ -697,6 +833,8 @@ export default function Funnel() {
   const location = useLocation();
   const initialData = location.state || {};
   const firstFieldRef = useRef(null);
+  const trustedFormRef = useRef(null);
+  const srTokenRef = useRef(null);
 
   const goalMap = {
     'lower-payment': 'lower-payment',
@@ -728,6 +866,8 @@ export default function Funnel() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [emailSuggestion, setEmailSuggestion] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [validatedFields, setValidatedFields] = useState({});
+  const [leadResult, setLeadResult] = useState(null);
   const [showExitIntent, setShowExitIntent] = useState(false);
   const exitIntentFired = useRef(false);
 
@@ -735,6 +875,7 @@ export default function Funnel() {
     setAnimKey(k => k + 1);
     setCurrentStep(idx);
     setFieldErrors({});
+    setValidatedFields({});
     setConsentError('');
   }, []);
 
@@ -801,6 +942,13 @@ export default function Funnel() {
     };
   }, [submitted, processing, currentStep]);
 
+  // Re-initialize SecureRights form capture when step changes
+  useEffect(() => {
+    if (window.LeadiD?.formcapture?.init) {
+      try { window.LeadiD.formcapture.init(); } catch { /* not loaded yet */ }
+    }
+  }, [currentStep]);
+
   // Auto-focus first field on form steps
   useEffect(() => {
     if (STEPS[currentStep]?.type === 'form') {
@@ -824,6 +972,7 @@ export default function Funnel() {
 
     setFormData(prev => ({ ...prev, [name]: formatted }));
     if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+    if (validatedFields[name]) setValidatedFields(prev => ({ ...prev, [name]: false }));
     if (name === 'email') setEmailSuggestion('');
 
     // TODO: Re-engagement email — when the user enters their email on step 2 and then
@@ -844,8 +993,10 @@ export default function Funnel() {
     const result = validate(value);
     if (result !== true) {
       setFieldErrors(prev => ({ ...prev, [name]: result }));
+      setValidatedFields(prev => ({ ...prev, [name]: false }));
     } else {
       setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+      setValidatedFields(prev => ({ ...prev, [name]: true }));
       // Check email typo only after passing basic validation
       if (name === 'email') {
         const typo = detectEmailTypo(value);
@@ -884,7 +1035,7 @@ export default function Funnel() {
     goTo(currentStep + 1);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (submitting) return; // Prevent double-submit
 
     const errors = validateStep(STEPS[currentStep], formData);
@@ -901,8 +1052,33 @@ export default function Funnel() {
     setConsentError('');
     setSubmitting(true);
 
-    // TODO: Send formData to your backend/CRM
-    console.log('Lead Data:', formData);
+    // Gather third-party compliance tokens from DOM
+    const trustedFormCertUrl =
+      trustedFormRef.current?.value ||
+      document.querySelector('input[name="xxTrustedFormCertUrl"]')?.value ||
+      '';
+    const srToken =
+      srTokenRef.current?.value ||
+      document.querySelector('input[name="SR_TOKEN"]')?.value ||
+      '';
+
+    // Build payload (backend handles field mapping to LeadPoint names)
+    const payload = {
+      goal: formData['goal'],
+      email: formData['email'],
+      property_type: formData['property-type'],
+      home_value: formData['home_value'],
+      mortgage_balance: formData['mortgage_balance'],
+      current_rate: formData['current_rate'],
+      credit: formData['credit'],
+      address: formData['address'],
+      zip_code: formData['zip_code'],
+      first_name: formData['first_name'],
+      last_name: formData['last_name'],
+      phone: formData['phone'],
+      trustedFormCertUrl,
+      srToken,
+    };
 
     // Identify user with Chatbase
     identifyChatbaseUser(formData);
@@ -913,14 +1089,47 @@ export default function Funnel() {
     // Show processing animation
     setAnimKey(k => k + 1);
     setProcessing(true);
+    const submitStart = Date.now();
 
-    // Simulate AI processing, then show success
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      setLeadResult(result);
+
+      // Ensure processing animation shows for at least 5 seconds
+      const elapsed = Date.now() - submitStart;
+      if (elapsed < 5000) {
+        await new Promise(resolve => setTimeout(resolve, 5000 - elapsed));
+      }
+
       setProcessing(false);
       setSubmitted(true);
       setSubmitting(false);
       setAnimKey(k => k + 1);
-    }, 6500);
+    } catch (err) {
+      console.error('Submission error:', err);
+
+      const elapsed = Date.now() - submitStart;
+      if (elapsed < 3000) {
+        await new Promise(resolve => setTimeout(resolve, 3000 - elapsed));
+      }
+
+      setLeadResult({
+        status: 'NETWORK_ERROR',
+        message: 'We couldn\'t connect to our servers. Please check your connection and try again.',
+        errors: [],
+        buyers: [],
+      });
+      setProcessing(false);
+      setSubmitted(true);
+      setSubmitting(false);
+      setAnimKey(k => k + 1);
+    }
   };
 
   const step = STEPS[currentStep];
@@ -974,7 +1183,16 @@ export default function Funnel() {
           {processing ? (
             <ProcessingScreen />
           ) : submitted ? (
-            <SuccessScreen />
+            <ResultsScreen
+              result={leadResult}
+              formData={formData}
+              onRetry={() => {
+                setSubmitted(false);
+                setLeadResult(null);
+                setSubmitting(false);
+                goTo(STEPS.length - 1);
+              }}
+            />
           ) : (
             <>
               <div className="funnel-step-label">{step.label}</div>
@@ -996,14 +1214,22 @@ export default function Funnel() {
                   onChange={handleFieldChange}
                   onBlur={handleFieldBlur}
                   errors={fieldErrors}
+                  validated={validatedFields}
                   emailSuggestion={emailSuggestion}
                   onAcceptEmailSuggestion={handleAcceptEmailSuggestion}
                   firstFieldRef={firstFieldRef}
                 />
               )}
 
+              {/* Hidden compliance fields — populated by third-party scripts */}
+              <input type="hidden" name="xxTrustedFormCertUrl" ref={trustedFormRef} />
+              <input type="hidden" name="SR_TOKEN" ref={srTokenRef} />
+
               {/* Trust badges on final step */}
               {isLast && <TrustBadges />}
+
+              {/* SecureRights TCPA disclosure — injected by script on final step */}
+              {isLast && <div id="srDisclosure" />}
 
               {/* Consent on final step */}
               {step.hasConsent && (
