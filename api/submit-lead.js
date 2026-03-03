@@ -220,6 +220,7 @@ export default async function handler(req, res) {
     params.append('LOAN_TYPE', 'FIXED');
     params.append('LOAN_PURP', GOAL_TO_LOAN_PURP[body.goal] || 'lower_payment');
     params.append('MTG_ONE_INT', rateToRange(body.current_rate));
+    params.append('ADD_CASH', String(parseCurrency(body.additional_cash)));
     params.append('VA_STATUS', 'NO');
 
     // Property location (same as personal for refi)

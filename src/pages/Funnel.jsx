@@ -68,7 +68,7 @@ function detectEmailTypo(email) {
 const STEPS = [
   {
     id: 'goal',
-    label: 'Step 1 of 7',
+    label: 'Step 1 of 8',
     progressLabel: 'Goal',
     title: 'What is your refinance goal?',
     subtitle: 'This helps our AI match you with the right lenders.',
@@ -98,7 +98,7 @@ const STEPS = [
   },
   {
     id: 'email-capture',
-    label: 'Step 2 of 7',
+    label: 'Step 2 of 8',
     progressLabel: 'Email',
     title: 'Where should we send your offers?',
     subtitle: "Enter your email so we can start matching you — we'll never spam you.",
@@ -109,7 +109,7 @@ const STEPS = [
   },
   {
     id: 'property-type',
-    label: 'Step 3 of 7',
+    label: 'Step 3 of 8',
     progressLabel: 'Property',
     title: 'What type of property is it?',
     subtitle: 'Select the type that best describes your home.',
@@ -140,7 +140,7 @@ const STEPS = [
   },
   {
     id: 'home-value',
-    label: 'Step 4 of 7',
+    label: 'Step 4 of 8',
     progressLabel: 'Value',
     title: 'Estimated home value?',
     subtitle: "Your best estimate is fine — we'll verify later.",
@@ -152,8 +152,16 @@ const STEPS = [
     ],
   },
   {
+    id: 'cash-out',
+    label: 'Step 5 of 8',
+    progressLabel: 'Cash',
+    title: 'Want to access extra cash?',
+    subtitle: 'Tap into your home equity — many homeowners use it for renovations, debt payoff, or a financial cushion.',
+    type: 'slider',
+  },
+  {
     id: 'credit',
-    label: 'Step 5 of 7',
+    label: 'Step 6 of 8',
     progressLabel: 'Credit',
     title: 'Estimated credit score?',
     subtitle: "This won't affect your credit. We just need a range.",
@@ -183,7 +191,7 @@ const STEPS = [
   },
   {
     id: 'zip',
-    label: 'Step 6 of 7',
+    label: 'Step 7 of 8',
     progressLabel: 'Location',
     title: 'Where is your property located?',
     subtitle: 'Rates vary by location \u2014 this helps us find local offers.',
@@ -195,7 +203,7 @@ const STEPS = [
   },
   {
     id: 'contact',
-    label: 'Step 7 of 7 \u2014 Almost Done!',
+    label: 'Step 8 of 8 \u2014 Almost Done!',
     progressLabel: 'Contact',
     title: 'Complete your profile to see rates',
     subtitle: 'Just a few more details and we\'ll have your personalized rates ready.',
@@ -270,6 +278,63 @@ function OptionStep({ step, formData, onSelect }) {
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/* ============================================================
+   Cash-Out Slider Step
+   ============================================================ */
+
+function CashOutStep({ formData, onChange }) {
+  const rawValue = parseCurrencyToNumber(formData['additional_cash'] || '$0');
+  const displayValue = rawValue.toLocaleString('en-US');
+
+  const handleSlider = (e) => {
+    const val = Number(e.target.value);
+    onChange('additional_cash', val === 0 ? '$0' : '$' + val.toLocaleString('en-US'));
+  };
+
+  // Estimate: ~$4/mo per $1,000 borrowed (rough 30yr fixed @ ~5-6%)
+  const estMonthly = Math.round(rawValue * 4 / 1000);
+
+  return (
+    <div className="cashout-step">
+      <div className="cashout-amount-display">
+        <span className="cashout-dollar">${displayValue}</span>
+      </div>
+
+      <input
+        type="range"
+        min={0}
+        max={100000}
+        step={5000}
+        value={rawValue}
+        onChange={handleSlider}
+        className="cashout-slider"
+        aria-label="Additional cash amount"
+      />
+
+      <div className="cashout-range-labels">
+        <span>$0</span>
+        <span>$100,000</span>
+      </div>
+
+      {rawValue > 0 && (
+        <div className="cashout-estimate">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>Estimated additional ~<strong>${estMonthly}/mo</strong> to your payment</span>
+        </div>
+      )}
+
+      <div className="cashout-pitch">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-secondary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+        </svg>
+        <p>Homeowners use cash-out to pay off high-interest debt, fund home improvements, or build a financial safety net — often at a fraction of credit card rates.</p>
+      </div>
     </div>
   );
 }
@@ -883,6 +948,7 @@ export default function Funnel() {
   const [leadResult, setLeadResult] = useState(null);
   const [showExitIntent, setShowExitIntent] = useState(false);
   const exitIntentFired = useRef(false);
+  const [googleLoaded, setGoogleLoaded] = useState(!!window.google?.maps?.places);
 
   const goTo = useCallback((idx) => {
     setAnimKey(k => k + 1);
@@ -959,6 +1025,73 @@ export default function Funnel() {
       return () => clearTimeout(timer);
     }
   }, [currentStep]);
+
+  // Load Google Places API script (client-side key, restricted to domain)
+  useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (!apiKey || window.google?.maps?.places) {
+      if (window.google?.maps?.places) setGoogleLoaded(true);
+      return;
+    }
+    if (document.querySelector('script[src*="maps.googleapis.com"]')) return;
+
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+    script.async = true;
+    script.onload = () => setGoogleLoaded(true);
+    document.head.appendChild(script);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Attach Google Places Autocomplete to address input on the location step
+  useEffect(() => {
+    if (!googleLoaded || STEPS[currentStep]?.id !== 'zip') return;
+
+    const input = document.getElementById('field-address');
+    if (!input) return;
+
+    const autocomplete = new window.google.maps.places.Autocomplete(input, {
+      types: ['address'],
+      componentRestrictions: { country: 'us' },
+      fields: ['address_components'],
+    });
+
+    autocomplete.addListener('place_changed', () => {
+      const place = autocomplete.getPlace();
+      if (!place.address_components) return;
+
+      let streetNumber = '';
+      let route = '';
+      let zip = '';
+
+      for (const component of place.address_components) {
+        const type = component.types[0];
+        if (type === 'street_number') streetNumber = component.long_name;
+        else if (type === 'route') route = component.short_name;
+        else if (type === 'postal_code') zip = component.long_name;
+      }
+
+      const streetAddress = streetNumber ? `${streetNumber} ${route}` : route;
+
+      setFormData(prev => ({
+        ...prev,
+        address: streetAddress,
+        ...(zip ? { zip_code: zip } : {}),
+      }));
+
+      if (streetAddress) {
+        setValidatedFields(prev => ({ ...prev, address: true }));
+        setFieldErrors(prev => ({ ...prev, address: undefined }));
+      }
+      if (zip) {
+        setValidatedFields(prev => ({ ...prev, zip_code: true }));
+        setFieldErrors(prev => ({ ...prev, zip_code: undefined }));
+      }
+    });
+
+    return () => {
+      window.google.maps.event.clearInstanceListeners(autocomplete);
+    };
+  }, [currentStep, googleLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Input masking + formatting
   const handleFieldChange = (name, value) => {
@@ -1071,6 +1204,7 @@ export default function Funnel() {
       home_value: formData['home_value'],
       mortgage_balance: formData['mortgage_balance'],
       current_rate: formData['current_rate'],
+      additional_cash: formData['additional_cash'],
       credit: formData['credit'],
       address: formData['address'],
       zip_code: formData['zip_code'],
@@ -1206,6 +1340,8 @@ export default function Funnel() {
 
               {step.type === 'options' ? (
                 <OptionStep step={step} formData={formData} onSelect={handleOptionSelect} />
+              ) : step.type === 'slider' ? (
+                <CashOutStep formData={formData} onChange={handleFieldChange} />
               ) : (
                 <FormStep
                   step={step}
@@ -1243,7 +1379,7 @@ export default function Funnel() {
                   </button>
                 ) : <div />}
 
-                {step.type === 'form' && (
+                {(step.type === 'form' || step.type === 'slider') && (
                   <div className="funnel-cta-wrap">
                     {isLast ? (
                       <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
