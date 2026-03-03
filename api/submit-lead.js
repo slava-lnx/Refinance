@@ -239,15 +239,26 @@ export default async function handler(req, res) {
       params.append('lp_test_mode', TEST_MODE);
     }
 
+    // Log outgoing payload
+    const paramString = params.toString();
+    console.log('--- LEADPOINT REQUEST ---');
+    console.log('URL:', LEADPOINT_URL);
+    console.log('PARAMS:', Object.fromEntries(params.entries()));
+
     // POST to LeadPoint
     const lpResponse = await fetch(LEADPOINT_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
+      body: paramString,
     });
 
     const xmlText = await lpResponse.text();
+    console.log('--- LEADPOINT RESPONSE ---');
+    console.log('HTTP Status:', lpResponse.status);
+    console.log('XML:', xmlText);
+
     const parsed = parseLeadPointXML(xmlText);
+    console.log('PARSED:', JSON.stringify(parsed, null, 2));
 
     return res.status(200).json(parsed);
   } catch (err) {
