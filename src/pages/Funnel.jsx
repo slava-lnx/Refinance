@@ -197,7 +197,7 @@ const STEPS = [
     subtitle: 'Rates vary by location \u2014 this helps us find local offers.',
     type: 'form',
     fields: [
-      { name: 'address', label: 'Street Address', type: 'text', placeholder: '123 Main St', autoComplete: 'street-address', enterKeyHint: 'next' },
+      { name: 'address', label: 'Street Address', type: 'text', placeholder: '123 Main St', autoComplete: 'off', enterKeyHint: 'next' },
       { name: 'zip_code', label: 'Property ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'next' },
     ],
   },
@@ -1049,11 +1049,17 @@ export default function Funnel() {
     const input = document.getElementById('field-address');
     if (!input) return;
 
+    // Prevent browser native autocomplete from competing with Google Places
+    input.setAttribute('autocomplete', 'off');
+
     const autocomplete = new window.google.maps.places.Autocomplete(input, {
       types: ['address'],
       componentRestrictions: { country: 'us' },
       fields: ['address_components'],
     });
+
+    // Chrome sometimes resets autocomplete attr — force it off after a tick
+    setTimeout(() => input.setAttribute('autocomplete', 'off'), 100);
 
     autocomplete.addListener('place_changed', () => {
       const place = autocomplete.getPlace();
