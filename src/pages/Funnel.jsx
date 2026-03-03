@@ -1,6 +1,69 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { identifyChatbaseUser } from '../components/ChatbaseWidget';
+
+/* ============================================================
+   Formatting Helpers
+   ============================================================ */
+
+function formatCurrency(raw) {
+  const digits = raw.replace(/\D/g, '');
+  if (!digits) return '';
+  return '$' + Number(digits).toLocaleString('en-US');
+}
+
+function parseCurrencyToNumber(formatted) {
+  return Number(formatted.replace(/\D/g, '')) || 0;
+}
+
+function formatPhone(raw) {
+  const digits = raw.replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function formatRate(raw) {
+  // Allow digits, one decimal point
+  let cleaned = raw.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
+  if (cleaned && !cleaned.endsWith('.')) {
+    const num = parseFloat(cleaned);
+    if (num > 24) cleaned = '24';
+  }
+  return cleaned ? cleaned + '%' : '';
+}
+
+function stripRate(val) {
+  return val.replace(/%/g, '');
+}
+
+/* ============================================================
+   Common Email Typos (LeadPoint flags these)
+   ============================================================ */
+
+const EMAIL_DOMAIN_CORRECTIONS = {
+  'gmial.com': 'gmail.com', 'gmai.com': 'gmail.com', 'gmal.com': 'gmail.com',
+  'gnail.com': 'gmail.com', 'gamil.com': 'gmail.com', 'gmail.con': 'gmail.com',
+  'gmail.co': 'gmail.com', 'ggmail.com': 'gmail.com', 'gmail.coms': 'gmail.com',
+  'yaho.com': 'yahoo.com', 'yahooo.com': 'yahoo.com', 'yahoo.con': 'yahoo.com',
+  'yahoo.co': 'yahoo.com', 'hotmal.com': 'hotmail.com', 'hotmail.con': 'hotmail.com',
+  'outloo.com': 'outlook.com', 'outlook.con': 'outlook.com',
+};
+
+function detectEmailTypo(email) {
+  const parts = email.trim().split('@');
+  if (parts.length !== 2) return null;
+  const domain = parts[1].toLowerCase();
+  return EMAIL_DOMAIN_CORRECTIONS[domain]
+    ? `Did you mean ${parts[0]}@${EMAIL_DOMAIN_CORRECTIONS[domain]}?`
+    : null;
+}
+
+/* ============================================================
+   Steps Configuration
+   ============================================================ */
 
 const STEPS = [
   {
@@ -41,7 +104,7 @@ const STEPS = [
     subtitle: "Enter your email so we can start matching you — we'll never spam you.",
     type: 'form',
     fields: [
-      { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john@example.com' },
+      { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john@example.com', autoComplete: 'email', inputMode: 'email', enterKeyHint: 'next' },
     ],
   },
   {
@@ -83,9 +146,9 @@ const STEPS = [
     subtitle: "Your best estimate is fine — we'll verify later.",
     type: 'form',
     fields: [
-      { name: 'home_value', label: 'Home Value', type: 'text', placeholder: '$350,000' },
-      { name: 'mortgage_balance', label: 'Current Mortgage Balance', type: 'text', placeholder: '$250,000' },
-      { name: 'current_rate', label: 'Current Interest Rate', type: 'text', placeholder: '6.5%' },
+      { name: 'home_value', label: 'Home Value', type: 'text', placeholder: '$350,000', autoComplete: 'off', inputMode: 'numeric', enterKeyHint: 'next' },
+      { name: 'mortgage_balance', label: 'Current Mortgage Balance', type: 'text', placeholder: '$250,000', autoComplete: 'off', inputMode: 'numeric', enterKeyHint: 'next' },
+      { name: 'current_rate', label: 'Current Interest Rate', type: 'text', placeholder: '6.5%', autoComplete: 'off', inputMode: 'decimal', enterKeyHint: 'next' },
     ],
   },
   {
@@ -105,12 +168,12 @@ const STEPS = [
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
-      ), label: 'Good (680–739)', value: 'good' },
+      ), label: 'Good (680\u2013739)', value: 'good' },
       { icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
-      ), label: 'Fair (620–679)', value: 'fair' },
+      ), label: 'Fair (620\u2013679)', value: 'fair' },
       { icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
@@ -123,35 +186,37 @@ const STEPS = [
     label: 'Step 6 of 7',
     progressLabel: 'Location',
     title: 'Where is your property located?',
-    subtitle: 'Rates vary by location — this helps us find local offers.',
+    subtitle: 'Rates vary by location \u2014 this helps us find local offers.',
     type: 'form',
     fields: [
-      { name: 'zip_code', label: 'Property ZIP Code', type: 'text', placeholder: '90210', maxLength: 5 },
+      { name: 'zip_code', label: 'Property ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'next' },
     ],
   },
   {
     id: 'contact',
-    label: 'Step 7 of 7 — Almost Done!',
+    label: 'Step 7 of 7 \u2014 Almost Done!',
     progressLabel: 'Contact',
     title: 'Complete your profile to see rates',
     subtitle: 'Just a few more details and we\'ll have your personalized rates ready.',
     type: 'form',
     hasConsent: true,
     fields: [
-      { name: 'first_name', label: 'First Name', type: 'text', placeholder: 'John' },
-      { name: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Smith' },
-      { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '(555) 123-4567' },
+      { name: 'first_name', label: 'First Name', type: 'text', placeholder: 'John', autoComplete: 'given-name', enterKeyHint: 'next' },
+      { name: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Smith', autoComplete: 'family-name', enterKeyHint: 'next' },
+      { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '(555) 123-4567', autoComplete: 'tel', inputMode: 'tel', enterKeyHint: 'done' },
     ],
   },
 ];
 
-/* --- Progress Bar Component --- */
+/* ============================================================
+   Progress Bar
+   ============================================================ */
+
 function SteppedProgress({ currentStep, totalSteps }) {
   const fillPercent = currentStep / (totalSteps - 1) * 100;
-  const trackWidth = `calc(${fillPercent}% * (1 - 48px / 100%))`;
 
   return (
-    <div className="funnel-progress">
+    <div className="funnel-progress" role="progressbar" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps} aria-label={`Step ${currentStep + 1} of ${totalSteps}`}>
       <div className="progress-steps">
         <div
           className="progress-fill-track"
@@ -162,8 +227,8 @@ function SteppedProgress({ currentStep, totalSteps }) {
             key={step.id}
             className={`progress-step${i === currentStep ? ' active' : ''}${i < currentStep ? ' completed' : ''}`}
           >
-            <div className="progress-dot">
-              {i < currentStep ? '✓' : i + 1}
+            <div className="progress-dot" aria-hidden="true">
+              {i < currentStep ? '\u2713' : i + 1}
             </div>
             <span className="progress-step-label">{step.progressLabel}</span>
           </div>
@@ -173,54 +238,76 @@ function SteppedProgress({ currentStep, totalSteps }) {
   );
 }
 
-/* --- Step Components --- */
+/* ============================================================
+   Option Step (accessible)
+   ============================================================ */
+
 function OptionStep({ step, formData, onSelect }) {
+  const handleKeyDown = (e, value) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect(step.id, value);
+    }
+  };
+
   return (
-    <div className="funnel-options">
-      {step.options.map(opt => (
-        <div
-          key={opt.value}
-          className={`funnel-option${formData[step.id] === opt.value ? ' selected' : ''}`}
-          onClick={() => onSelect(step.id, opt.value)}
-        >
-          <span className="option-icon">{opt.icon}</span>
-          <span className="option-label">{opt.label}</span>
-        </div>
-      ))}
+    <div className="funnel-options" role="radiogroup" aria-label={step.title}>
+      {step.options.map(opt => {
+        const isSelected = formData[step.id] === opt.value;
+        return (
+          <div
+            key={opt.value}
+            className={`funnel-option${isSelected ? ' selected' : ''}`}
+            role="radio"
+            aria-checked={isSelected}
+            tabIndex={0}
+            onClick={() => onSelect(step.id, opt.value)}
+            onKeyDown={(e) => handleKeyDown(e, opt.value)}
+          >
+            <span className="option-icon" aria-hidden="true">{opt.icon}</span>
+            <span className="option-label">{opt.label}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-function FormStep({ step, formData, onChange, errors = {} }) {
+/* ============================================================
+   Form Step (accessible, masked inputs, blur validation)
+   ============================================================ */
+
+function FormStep({ step, formData, onChange, onBlur, errors = {}, emailSuggestion, onAcceptEmailSuggestion, firstFieldRef }) {
   return (
     <>
-      {step.fields.map(field => (
-        <div key={field.name} className="form-group">
-          <label>{field.label}</label>
-          {field.type === 'select' ? (
-            <select
-              value={formData[field.name] || ''}
-              onChange={e => onChange(field.name, e.target.value)}
-              style={errors[field.name] ? { borderColor: '#EF4444' } : {}}
-            >
-              {field.options.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          ) : (
-            <input
-              type={field.type}
-              placeholder={field.placeholder}
-              maxLength={field.maxLength}
-              value={formData[field.name] || ''}
-              onChange={e => onChange(field.name, e.target.value)}
-              style={errors[field.name] ? { borderColor: '#EF4444' } : {}}
-            />
-          )}
+      {step.fields.map((field, idx) => (
+        <div key={field.name} className={`form-group${errors[field.name] ? ' has-error' : ''}`}>
+          <label htmlFor={`field-${field.name}`}>{field.label}</label>
+          <input
+            ref={idx === 0 ? firstFieldRef : undefined}
+            id={`field-${field.name}`}
+            type={field.type}
+            placeholder={field.placeholder}
+            maxLength={field.maxLength}
+            value={formData[field.name] || ''}
+            onChange={e => onChange(field.name, e.target.value)}
+            onBlur={() => onBlur(field.name)}
+            autoComplete={field.autoComplete || 'off'}
+            inputMode={field.inputMode}
+            enterKeyHint={field.enterKeyHint}
+            aria-invalid={errors[field.name] ? 'true' : undefined}
+            aria-describedby={errors[field.name] ? `error-${field.name}` : undefined}
+            style={errors[field.name] ? { borderColor: '#EF4444' } : undefined}
+          />
           {errors[field.name] && (
-            <span style={{ display: 'block', marginTop: 4, fontSize: '0.78rem', color: '#EF4444' }}>
+            <span id={`error-${field.name}`} className="field-error" role="alert">
               {errors[field.name]}
             </span>
+          )}
+          {field.name === 'email' && emailSuggestion && !errors[field.name] && (
+            <button type="button" className="email-suggestion" onClick={onAcceptEmailSuggestion}>
+              {emailSuggestion}
+            </button>
           )}
         </div>
       ))}
@@ -228,11 +315,28 @@ function FormStep({ step, formData, onChange, errors = {} }) {
   );
 }
 
-function ConsentBlock({ agreed, onChange }) {
+/* ============================================================
+   Consent Block (custom checkbox)
+   ============================================================ */
+
+function ConsentBlock({ agreed, onChange, error }) {
   return (
-    <div className="consent-block">
-      <label className="consent-label">
-        <input type="checkbox" checked={agreed} onChange={e => onChange(e.target.checked)} />
+    <div className={`consent-block${error ? ' consent-error' : ''}`}>
+      <label className="consent-label" onClick={e => { e.preventDefault(); onChange(!agreed); }}>
+        <span
+          className={`custom-checkbox${agreed ? ' checked' : ''}`}
+          role="checkbox"
+          aria-checked={agreed}
+          tabIndex={0}
+          onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onChange(!agreed); } }}
+        >
+          {agreed && (
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          )}
+        </span>
+        <input type="checkbox" checked={agreed} readOnly className="sr-only" tabIndex={-1} aria-hidden="true" />
         <span>
           By submitting, I agree to the <Link to="/terms-of-service" target="_blank">Terms of Service</Link> and{' '}
           <Link to="/privacy-policy" target="_blank">Privacy Policy</Link>, and consent to be contacted by
@@ -240,14 +344,19 @@ function ConsentBlock({ agreed, onChange }) {
           via automated technology. This is not a condition of purchase. Msg & data rates may apply.
         </span>
       </label>
+      {error && <span className="field-error consent-error-msg" role="alert">{error}</span>}
     </div>
   );
 }
 
+/* ============================================================
+   AI Matching Message
+   ============================================================ */
+
 function AIMatchingMessage() {
   return (
     <div className="ai-matching">
-      <div className="ai-matching-icon">
+      <div className="ai-matching-icon" aria-hidden="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h.01M15 9h.01M8 14s1.5 2 4 2 4-2 4-2"/>
         </svg>
@@ -258,6 +367,54 @@ function AIMatchingMessage() {
     </div>
   );
 }
+
+/* ============================================================
+   Social Proof
+   ============================================================ */
+
+function SocialProof() {
+  return (
+    <div className="social-proof" aria-label="Social proof">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+      </svg>
+      <span>3,247 homeowners matched this week</span>
+    </div>
+  );
+}
+
+/* ============================================================
+   Trust Badges (on final submit step)
+   ============================================================ */
+
+function TrustBadges() {
+  return (
+    <div className="trust-badges">
+      <div className="trust-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+        <span>256-bit SSL Encrypted</span>
+      </div>
+      <div className="trust-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        <span>Won't affect your credit</span>
+      </div>
+      <div className="trust-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>No obligation</span>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Processing Screen
+   ============================================================ */
 
 function ProcessingScreen() {
   const [phase, setPhase] = useState(0);
@@ -291,7 +448,7 @@ function ProcessingScreen() {
     )},
   ];
 
-  useState(() => {
+  useEffect(() => {
     let prog = 0;
     const progressInterval = setInterval(() => {
       prog += Math.random() * 3 + 0.5;
@@ -308,22 +465,12 @@ function ProcessingScreen() {
     }, 1200);
 
     return () => { clearInterval(progressInterval); clearInterval(phaseInterval); };
-  });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px 0' }}>
-      {/* Animated spinner */}
+    <div style={{ textAlign: 'center', padding: '40px 0' }} role="status" aria-live="polite">
       <div style={{ marginBottom: 32 }}>
-        <div style={{
-          width: 80, height: 80, margin: '0 auto',
-          borderRadius: '50%',
-          border: '4px solid var(--color-border-light)',
-          borderTopColor: 'var(--color-primary-mid)',
-          borderRightColor: 'var(--color-secondary)',
-          animation: 'spinLoader 1s linear infinite',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.6rem',
-        }}>
+        <div className="processing-spinner">
           <span style={{ animation: 'none' }}>{phases[phase].icon}</span>
         </div>
       </div>
@@ -338,23 +485,13 @@ function ProcessingScreen() {
         {phases[phase].text}
       </p>
 
-      {/* Progress bar */}
-      <div style={{
-        background: 'var(--color-border-light)', borderRadius: 8, height: 10,
-        maxWidth: 360, margin: '0 auto 16px', overflow: 'hidden',
-      }}>
-        <div style={{
-          height: '100%', borderRadius: 8,
-          background: 'linear-gradient(90deg, var(--color-primary-mid), var(--color-secondary))',
-          width: `${progress}%`,
-          transition: 'width 0.15s ease',
-        }} />
+      <div className="processing-bar-track">
+        <div className="processing-bar-fill" style={{ width: `${progress}%` }} />
       </div>
       <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
         {Math.round(progress)}% complete
       </div>
 
-      {/* Checklist */}
       <div style={{
         marginTop: 32, textAlign: 'left', maxWidth: 320, margin: '32px auto 0',
         display: 'flex', flexDirection: 'column', gap: 12,
@@ -373,7 +510,7 @@ function ProcessingScreen() {
               fontWeight: 700,
               transition: 'all 0.3s',
             }}>
-              {i < phase ? '✓' : i === phase ? '...' : (i + 1)}
+              {i < phase ? '\u2713' : i === phase ? '...' : (i + 1)}
             </span>
             <span style={{
               fontSize: '0.85rem', fontWeight: i === phase ? 600 : 400,
@@ -384,15 +521,13 @@ function ProcessingScreen() {
           </div>
         ))}
       </div>
-
-      <style>{`
-        @keyframes spinLoader {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }
+
+/* ============================================================
+   Success Screen
+   ============================================================ */
 
 function SuccessScreen() {
   return (
@@ -420,10 +555,10 @@ function SuccessScreen() {
           {[
             'Our AI scans 25+ lender programs for your best match',
             'Matched lenders send you personalized rate offers',
-            'You compare and choose — zero obligation',
+            'You compare and choose \u2014 zero obligation',
           ].map((text, i) => (
             <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-              <span style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '1.1rem' }}>✓</span>
+              <span style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '1.1rem' }}>{'\u2713'}</span>
               <span style={{ fontSize: '0.9rem', color: 'var(--color-text-light)' }}>{text}</span>
             </div>
           ))}
@@ -434,16 +569,79 @@ function SuccessScreen() {
   );
 }
 
-/* --- Validation --- */
+/* ============================================================
+   Exit Intent Modal
+   ============================================================ */
+
+function ExitIntentModal({ onStay, onLeave }) {
+  return (
+    <div className="exit-intent-overlay" role="dialog" aria-modal="true" aria-label="Are you sure you want to leave?">
+      <div className="exit-intent-modal">
+        <h3>Wait! You're almost there</h3>
+        <p>You're just steps away from seeing your personalized refinance rates. Are you sure you want to leave?</p>
+        <div className="exit-intent-actions">
+          <button className="btn btn-primary" onClick={onStay}>Keep Going</button>
+          <button className="exit-intent-leave" onClick={onLeave}>Leave anyway</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   Validation
+   ============================================================ */
+
 const validators = {
-  email: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) || 'Please enter a valid email address.',
-  phone: v => /^\+?[\d\s\-().]{7,15}$/.test(v.trim()) || 'Please enter a valid phone number.',
-  zip_code: v => /^\d{5}$/.test(v.trim()) || 'Please enter a valid 5-digit ZIP code.',
-  home_value: v => v.trim().length > 0 || 'Please enter your estimated home value.',
-  mortgage_balance: v => v.trim().length > 0 || 'Please enter your current mortgage balance.',
-  current_rate: v => v.trim().length > 0 || 'Please enter your current interest rate.',
-  first_name: v => v.trim().length > 0 || 'Please enter your first name.',
-  last_name: v => v.trim().length > 0 || 'Please enter your last name.',
+  email: v => {
+    if (!v.trim()) return 'Please enter your email address.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim())) return 'Please enter a valid email address.';
+    return true;
+  },
+  phone: v => {
+    if (!v.trim()) return 'Please enter your phone number.';
+    const digits = v.replace(/\D/g, '');
+    if (digits.length !== 10) return 'Please enter a valid 10-digit phone number.';
+    return true;
+  },
+  zip_code: v => {
+    if (!v.trim()) return 'Please enter your ZIP code.';
+    if (!/^\d{5}$/.test(v.trim())) return 'Please enter a valid 5-digit ZIP code.';
+    return true;
+  },
+  home_value: v => {
+    const num = parseCurrencyToNumber(v);
+    if (!v.trim() || num === 0) return 'Please enter your estimated home value.';
+    if (num < 50000) return 'Home value must be at least $50,000.';
+    if (num > 5000000) return 'Home value cannot exceed $5,000,000.';
+    return true;
+  },
+  mortgage_balance: v => {
+    const num = parseCurrencyToNumber(v);
+    if (!v.trim() || num === 0) return 'Please enter your current mortgage balance.';
+    if (num > 5000000) return 'Mortgage balance cannot exceed $5,000,000.';
+    return true;
+  },
+  current_rate: v => {
+    const stripped = stripRate(v);
+    if (!stripped) return 'Please enter your current interest rate.';
+    const num = parseFloat(stripped);
+    if (isNaN(num) || num <= 0) return 'Please enter a valid interest rate.';
+    if (num > 24) return 'Interest rate cannot exceed 24%.';
+    return true;
+  },
+  first_name: v => {
+    if (!v.trim()) return 'Please enter your first name.';
+    if (v.trim().length < 2) return 'Name must be at least 2 characters.';
+    if (/\d/.test(v)) return 'Name cannot contain numbers.';
+    return true;
+  },
+  last_name: v => {
+    if (!v.trim()) return 'Please enter your last name.';
+    if (v.trim().length < 2) return 'Name must be at least 2 characters.';
+    if (/\d/.test(v)) return 'Name cannot contain numbers.';
+    return true;
+  },
 };
 
 function validateStep(step, formData) {
@@ -461,10 +659,44 @@ function validateStep(step, formData) {
   return errors;
 }
 
-/* --- Main Funnel Component --- */
+/* ============================================================
+   Session Storage Persistence
+   ============================================================ */
+
+const STORAGE_KEY = 'gmr_funnel_progress';
+
+function saveProgress(step, formData) {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ step, formData, ts: Date.now() }));
+  } catch { /* quota exceeded — ignore */ }
+}
+
+function loadProgress() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Expire after 30 minutes
+    if (Date.now() - data.ts > 30 * 60 * 1000) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return data;
+  } catch { return null; }
+}
+
+function clearProgress() {
+  try { sessionStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+}
+
+/* ============================================================
+   Main Funnel Component
+   ============================================================ */
+
 export default function Funnel() {
   const location = useLocation();
   const initialData = location.state || {};
+  const firstFieldRef = useRef(null);
 
   const goalMap = {
     'lower-payment': 'lower-payment',
@@ -474,28 +706,126 @@ export default function Funnel() {
     'consolidate': 'consolidate',
   };
 
+  // Restore from session or from route state
+  const savedProgress = loadProgress();
   const prefilledData = {};
   if (initialData.goal) prefilledData['goal'] = goalMap[initialData.goal] || initialData.goal;
   if (initialData.home_value) prefilledData['home_value'] = initialData.home_value;
   if (initialData.mortgage_balance) prefilledData['mortgage_balance'] = initialData.mortgage_balance;
   if (initialData.zip_code) prefilledData['zip_code'] = initialData.zip_code;
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState(prefilledData);
+  const hasRouteState = Object.keys(prefilledData).length > 0;
+  const restoredData = hasRouteState ? prefilledData : (savedProgress?.formData || prefilledData);
+  const restoredStep = hasRouteState ? 0 : (savedProgress?.step || 0);
+
+  const [currentStep, setCurrentStep] = useState(restoredStep);
+  const [formData, setFormData] = useState(restoredData);
   const [submitted, setSubmitted] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [animKey, setAnimKey] = useState(0);
   const [consentAgreed, setConsentAgreed] = useState(false);
+  const [consentError, setConsentError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [emailSuggestion, setEmailSuggestion] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
+  const exitIntentFired = useRef(false);
 
   const goTo = useCallback((idx) => {
     setAnimKey(k => k + 1);
     setCurrentStep(idx);
+    setFieldErrors({});
+    setConsentError('');
   }, []);
 
+  // Persist progress to sessionStorage
+  useEffect(() => {
+    if (!submitted && !processing) {
+      saveProgress(currentStep, formData);
+    }
+  }, [currentStep, formData, submitted, processing]);
+
+  // Browser back button interception — push state per step
+  useEffect(() => {
+    const handlePopState = () => {
+      if (submitted || processing) return;
+      if (currentStep > 0) {
+        goTo(currentStep - 1);
+      }
+    };
+
+    // Push a state for the current step
+    if (!submitted && !processing) {
+      window.history.pushState({ funnelStep: currentStep }, '');
+    }
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [currentStep, submitted, processing, goTo]);
+
+  // Exit intent detection
+  // Desktop: mouse leaves top of viewport
+  // Mobile: 45 seconds of inactivity on any step past step 1
+  useEffect(() => {
+    if (submitted || processing || currentStep === 0) return;
+
+    // Desktop: mouse leaves viewport
+    const handleMouseLeave = (e) => {
+      if (e.clientY <= 0 && !exitIntentFired.current) {
+        exitIntentFired.current = true;
+        setShowExitIntent(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+
+    // Mobile: inactivity timer (45s)
+    let idleTimer = null;
+    const resetIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      if (exitIntentFired.current) return;
+      idleTimer = setTimeout(() => {
+        if (!exitIntentFired.current) {
+          exitIntentFired.current = true;
+          setShowExitIntent(true);
+        }
+      }, 45000);
+    };
+    const idleEvents = ['touchstart', 'scroll', 'keydown'];
+    idleEvents.forEach(evt => document.addEventListener(evt, resetIdle, { passive: true }));
+    resetIdle(); // start the timer
+
+    return () => {
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      idleEvents.forEach(evt => document.removeEventListener(evt, resetIdle));
+      if (idleTimer) clearTimeout(idleTimer);
+    };
+  }, [submitted, processing, currentStep]);
+
+  // Auto-focus first field on form steps
+  useEffect(() => {
+    if (STEPS[currentStep]?.type === 'form') {
+      const timer = setTimeout(() => firstFieldRef.current?.focus(), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep]);
+
+  // Input masking + formatting
   const handleFieldChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    let formatted = value;
+    if (name === 'home_value' || name === 'mortgage_balance') {
+      formatted = formatCurrency(value);
+    } else if (name === 'phone') {
+      formatted = formatPhone(value);
+    } else if (name === 'current_rate') {
+      formatted = formatRate(stripRate(value));
+    } else if (name === 'zip_code') {
+      formatted = value.replace(/\D/g, '').slice(0, 5);
+    }
+
+    setFormData(prev => ({ ...prev, [name]: formatted }));
     if (fieldErrors[name]) setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+    if (name === 'email') setEmailSuggestion('');
+
     // TODO: Re-engagement email — when the user enters their email on step 2 and then
     // abandons the funnel, trigger an automated follow-up sequence via your email service
     // (e.g. Mailchimp, SendGrid). Fire a POST to your backend here with `name` === 'email'
@@ -504,6 +834,34 @@ export default function Funnel() {
     //   if (name === 'email' && value.includes('@')) {
     //     fetch('/api/leads/partial', { method: 'POST', body: JSON.stringify({ email: value }) });
     //   }
+  };
+
+  // Validate on blur
+  const handleFieldBlur = (name) => {
+    const value = formData[name] || '';
+    const validate = validators[name];
+    if (!validate || !value.trim()) return; // Don't show errors on empty blur (wait for submit)
+    const result = validate(value);
+    if (result !== true) {
+      setFieldErrors(prev => ({ ...prev, [name]: result }));
+    } else {
+      setFieldErrors(prev => ({ ...prev, [name]: undefined }));
+      // Check email typo only after passing basic validation
+      if (name === 'email') {
+        const typo = detectEmailTypo(value);
+        setEmailSuggestion(typo || '');
+      }
+    }
+  };
+
+  const handleAcceptEmailSuggestion = () => {
+    const parts = formData.email.trim().split('@');
+    const domain = parts[1]?.toLowerCase();
+    const corrected = EMAIL_DOMAIN_CORRECTIONS[domain];
+    if (corrected) {
+      setFormData(prev => ({ ...prev, email: `${parts[0]}@${corrected}` }));
+      setEmailSuggestion('');
+    }
   };
 
   const handleOptionSelect = (stepId, value) => {
@@ -515,24 +873,42 @@ export default function Funnel() {
 
   const advanceStep = () => {
     const errors = validateStep(STEPS[currentStep], formData);
-    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      // Shake the card
+      const card = document.querySelector('.funnel-card');
+      if (card) { card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 500); }
+      return;
+    }
     setFieldErrors({});
     goTo(currentStep + 1);
   };
 
   const handleSubmit = () => {
+    if (submitting) return; // Prevent double-submit
+
     const errors = validateStep(STEPS[currentStep], formData);
-    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
-    if (!consentAgreed) {
-      alert('Please agree to the Terms of Service and Privacy Policy to continue.');
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const card = document.querySelector('.funnel-card');
+      if (card) { card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 500); }
       return;
     }
+    if (!consentAgreed) {
+      setConsentError('Please agree to the Terms of Service and Privacy Policy to continue.');
+      return;
+    }
+    setConsentError('');
+    setSubmitting(true);
 
     // TODO: Send formData to your backend/CRM
     console.log('Lead Data:', formData);
 
     // Identify user with Chatbase
     identifyChatbaseUser(formData);
+
+    // Clear saved progress
+    clearProgress();
 
     // Show processing animation
     setAnimKey(k => k + 1);
@@ -542,6 +918,7 @@ export default function Funnel() {
     setTimeout(() => {
       setProcessing(false);
       setSubmitted(true);
+      setSubmitting(false);
       setAnimKey(k => k + 1);
     }, 6500);
   };
@@ -549,11 +926,32 @@ export default function Funnel() {
   const step = STEPS[currentStep];
   const isLast = currentStep === STEPS.length - 1;
 
+  // Enter key to advance on form steps
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Enter' && step?.type === 'form' && !submitted && !processing) {
+        e.preventDefault();
+        if (isLast) handleSubmit();
+        else advanceStep();
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }); // intentionally no deps — always uses latest closures
+
   return (
     <div className="funnel-page">
+      {/* Exit Intent Modal */}
+      {showExitIntent && (
+        <ExitIntentModal
+          onStay={() => setShowExitIntent(false)}
+          onLeave={() => { setShowExitIntent(false); window.location.href = '/'; }}
+        />
+      )}
+
       {/* Header */}
       <div className="funnel-header">
-        <Link to="/" className="logo">
+        <span className="logo funnel-logo-static">
           <div className="logo-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
@@ -561,18 +959,18 @@ export default function Funnel() {
             </svg>
           </div>
           GetMyRefinance
-        </Link>
-        <Link to="/" className="funnel-back">✕ Exit</Link>
+        </span>
+        <button className="funnel-back" onClick={(e) => { e.preventDefault(); if (currentStep > 0) setShowExitIntent(true); else window.location.href = '/'; }}>{'\u2715'} Exit</button>
       </div>
 
       {/* Stepped Progress Bar */}
-      {!submitted && (
+      {!submitted && !processing && (
         <SteppedProgress currentStep={currentStep} totalSteps={STEPS.length} />
       )}
 
       {/* Body */}
       <div className="funnel-body">
-        <div className="funnel-card" key={animKey}>
+        <div className={`funnel-card${submitted || processing ? '' : ' step-active'}`} key={animKey}>
           {processing ? (
             <ProcessingScreen />
           ) : submitted ? (
@@ -583,39 +981,59 @@ export default function Funnel() {
               <h2>{step.title}</h2>
               <p>{step.subtitle}</p>
 
+              {/* Social proof on first step */}
+              {step.id === 'goal' && <SocialProof />}
+
               {/* AI message on email step only */}
-              {step.id === 'email-capture' && (
-                <AIMatchingMessage />
-              )}
+              {step.id === 'email-capture' && <AIMatchingMessage />}
 
               {step.type === 'options' ? (
                 <OptionStep step={step} formData={formData} onSelect={handleOptionSelect} />
               ) : (
-                <FormStep step={step} formData={formData} onChange={handleFieldChange} errors={fieldErrors} />
+                <FormStep
+                  step={step}
+                  formData={formData}
+                  onChange={handleFieldChange}
+                  onBlur={handleFieldBlur}
+                  errors={fieldErrors}
+                  emailSuggestion={emailSuggestion}
+                  onAcceptEmailSuggestion={handleAcceptEmailSuggestion}
+                  firstFieldRef={firstFieldRef}
+                />
               )}
+
+              {/* Trust badges on final step */}
+              {isLast && <TrustBadges />}
 
               {/* Consent on final step */}
               {step.hasConsent && (
-                <ConsentBlock agreed={consentAgreed} onChange={setConsentAgreed} />
+                <ConsentBlock agreed={consentAgreed} onChange={(v) => { setConsentAgreed(v); setConsentError(''); }} error={consentError} />
               )}
+
+              {/* Error summary for screen readers */}
+              <div aria-live="polite" className="sr-only">
+                {Object.values(fieldErrors).filter(Boolean).join('. ')}
+              </div>
 
               <div className="funnel-nav">
                 {currentStep > 0 ? (
                   <button className="funnel-back" onClick={() => goTo(currentStep - 1)}>
-                    ← Back
+                    {'\u2190'} Back
                   </button>
                 ) : <div />}
 
                 {step.type === 'form' && (
-                  isLast ? (
-                    <button className="btn btn-primary" onClick={handleSubmit}>
-                      See My Rates →
-                    </button>
-                  ) : (
-                    <button className="btn btn-primary" onClick={advanceStep}>
-                      Continue →
-                    </button>
-                  )
+                  <div className="funnel-cta-wrap">
+                    {isLast ? (
+                      <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
+                        {submitting ? 'Submitting...' : 'See My Rates \u2192'}
+                      </button>
+                    ) : (
+                      <button className="btn btn-primary" onClick={advanceStep}>
+                        Continue {'\u2192'}
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </>

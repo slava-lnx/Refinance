@@ -211,6 +211,7 @@ p { color: var(--color-text-light); line-height: 1.8; }
 /* Funnel */
 .funnel-page { min-height: 100vh; background: var(--color-bg); display: flex; flex-direction: column; }
 .funnel-header { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
+.funnel-logo-static { cursor: default; pointer-events: none; }
 .funnel-progress { padding: 0 24px 20px; max-width: 700px; margin: 0 auto; width: 100%; }
 .progress-steps { display: flex; align-items: center; justify-content: space-between; position: relative; }
 .progress-steps::before { content: ''; position: absolute; top: 16px; left: 24px; right: 24px; height: 3px; background: var(--color-border); border-radius: 2px; z-index: 0; }
@@ -224,31 +225,83 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .progress-step.completed .progress-step-label { color: var(--color-primary-mid); }
 
 .funnel-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px 24px 60px; }
-.funnel-card { background: #fff; border-radius: var(--radius-xl); padding: 52px 48px; max-width: 620px; width: 100%; box-shadow: var(--shadow-xl); animation: fadeUp 0.35s ease; }
+.funnel-card { background: #fff; border-radius: var(--radius-xl); padding: 52px 48px; max-width: 620px; width: 100%; box-shadow: var(--shadow-xl); -webkit-animation: fadeUp 0.35s ease; animation: fadeUp 0.35s ease; will-change: transform, opacity; }
+@-webkit-keyframes fadeUp { from { opacity: 0; -webkit-transform: translateY(16px); transform: translateY(16px); } to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Shake animation for validation errors */
+.funnel-card.shake { -webkit-animation: shakeCard 0.45s ease; animation: shakeCard 0.45s ease; }
+@-webkit-keyframes shakeCard { 0%, 100% { -webkit-transform: translateX(0); } 15%, 45%, 75% { -webkit-transform: translateX(-6px); } 30%, 60%, 90% { -webkit-transform: translateX(6px); } }
+@keyframes shakeCard { 0%, 100% { transform: translateX(0); } 15%, 45%, 75% { transform: translateX(-6px); } 30%, 60%, 90% { transform: translateX(6px); } }
+
 .funnel-step-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--color-secondary); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 .funnel-step-label::before { content: ''; width: 20px; height: 2px; background: var(--color-secondary); border-radius: 1px; }
 .funnel-card h2 { color: var(--color-primary); font-size: 1.6rem; margin-bottom: 8px; }
 .funnel-card > p { font-size: 0.92rem; margin-bottom: 30px; }
 .funnel-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
-.funnel-option { background: var(--color-bg); border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; text-align: center; cursor: pointer; transition: var(--transition); font-weight: 500; color: var(--color-text); }
-.funnel-option:hover { border-color: var(--color-primary-mid); background: rgba(27,122,90,0.03); }
-.funnel-option.selected { border-color: var(--color-primary-mid); background: rgba(27,122,90,0.06); color: var(--color-primary); }
+.funnel-option { background: var(--color-bg); border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; min-height: 48px; text-align: center; cursor: pointer; transition: var(--transition); font-weight: 500; color: var(--color-text); outline: none; }
+.funnel-option:hover, .funnel-option:focus-visible { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.03); }
+.funnel-option:focus-visible { box-shadow: 0 0 0 3px rgba(67,56,202,0.2); }
+.funnel-option.selected { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.06); color: var(--color-primary); }
 .funnel-option .option-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
 .funnel-option .option-label { font-size: 0.88rem; }
 
-.consent-block { background: var(--color-bg); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 20px; margin-top: 8px; }
+/* Form inputs — 16px prevents iOS zoom, -webkit-appearance for Safari */
+.funnel-card .form-group input,
+.funnel-card .form-group select { font-size: 16px; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+.form-group.has-error input,
+.form-group.has-error select { border-color: #EF4444; }
+.field-error { display: block; margin-top: 4px; font-size: 0.78rem; color: #EF4444; }
+
+/* Email suggestion */
+.email-suggestion { display: inline-block; margin-top: 4px; padding: 4px 10px; font-size: 0.78rem; color: var(--color-primary-mid); background: rgba(67,56,202,0.06); border: 1px solid rgba(67,56,202,0.15); border-radius: 4px; cursor: pointer; transition: var(--transition); }
+.email-suggestion:hover { background: rgba(67,56,202,0.12); }
+
+/* Custom checkbox (cross-browser) */
+.custom-checkbox { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; min-width: 20px; border: 2px solid var(--color-border); border-radius: 4px; margin-top: 2px; cursor: pointer; transition: var(--transition); background: #fff; outline: none; }
+.custom-checkbox:focus-visible { box-shadow: 0 0 0 3px rgba(67,56,202,0.2); }
+.custom-checkbox.checked { background: var(--color-primary-mid); border-color: var(--color-primary-mid); }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+.consent-block { background: var(--color-bg); border-radius: var(--radius-sm); padding: 16px 18px; margin-bottom: 20px; margin-top: 8px; transition: var(--transition); }
+.consent-block.consent-error { border: 1.5px solid #EF4444; }
 .consent-label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: 0.8rem; color: var(--color-text-light); line-height: 1.6; }
-.consent-label input[type="checkbox"] { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--color-primary-mid); flex-shrink: 0; }
 .consent-label a { color: var(--color-primary-mid); text-decoration: underline; }
+.consent-error-msg { margin-top: 8px; }
+
+/* Social proof */
+.social-proof { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; padding: 8px 14px; background: rgba(16,185,129,0.06); border-radius: 50px; width: -webkit-fit-content; width: fit-content; font-size: 0.82rem; font-weight: 500; color: var(--color-success); }
+
+/* Trust badges */
+.trust-badges { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; margin-top: 4px; }
+.trust-badge { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 500; color: var(--color-text-muted); background: var(--color-bg); padding: 6px 12px; border-radius: 50px; }
 
 .ai-matching { display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, rgba(26,17,80,0.04), rgba(6,182,212,0.04)); border: 1px solid var(--color-border-light); border-radius: var(--radius-sm); padding: 14px 18px; margin-bottom: 24px; font-size: 0.85rem; color: var(--color-text-light); }
 .ai-matching-icon { width: 36px; height: 36px; background: var(--color-primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1rem; }
 
 .funnel-nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .funnel-nav .btn { min-width: 140px; justify-content: center; border-radius: var(--radius-sm); }
+.funnel-nav .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+.funnel-cta-wrap { display: flex; }
 .funnel-back { background: none; color: var(--color-text-muted); font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px; padding: 12px 16px; }
 .funnel-back:hover { color: var(--color-text); }
+
+/* Processing screen */
+.processing-spinner { width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; border: 4px solid var(--color-border-light); border-top-color: var(--color-primary-mid); border-right-color: var(--color-secondary); -webkit-animation: spinLoader 1s linear infinite; animation: spinLoader 1s linear infinite; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; will-change: transform; }
+@-webkit-keyframes spinLoader { to { -webkit-transform: rotate(360deg); } }
+@keyframes spinLoader { to { transform: rotate(360deg); } }
+.processing-bar-track { background: var(--color-border-light); border-radius: 8px; height: 10px; max-width: 360px; margin: 0 auto 16px; overflow: hidden; }
+.processing-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--color-primary-mid), var(--color-secondary)); transition: width 0.15s ease; will-change: width; }
+
+/* Exit intent modal */
+.exit-intent-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(15,10,46,0.6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 24px; -webkit-animation: fadeIn 0.2s ease; animation: fadeIn 0.2s ease; }
+@-webkit-keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.exit-intent-modal { background: #fff; border-radius: var(--radius-lg); padding: 40px 36px; max-width: 420px; width: 100%; text-align: center; box-shadow: var(--shadow-xl); }
+.exit-intent-modal h3 { color: var(--color-primary); margin-bottom: 12px; font-size: 1.4rem; }
+.exit-intent-modal p { font-size: 0.92rem; margin-bottom: 28px; }
+.exit-intent-actions { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.exit-intent-leave { background: none; color: var(--color-text-muted); font-size: 0.85rem; padding: 8px 16px; text-decoration: underline; }
 
 /* Page Hero */
 .page-hero { padding: 140px 0 60px; background: var(--color-primary); color: #fff; text-align: center; position: relative; overflow: hidden; }
@@ -314,10 +367,33 @@ p { color: var(--color-text-light); line-height: 1.8; }
   .articles-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; gap: 32px; }
   .footer-bottom { flex-direction: column; }
-  .funnel-card { padding: 36px 24px; }
-  .funnel-options { grid-template-columns: 1fr; }
+
+  /* Funnel mobile — scrollable layout, nav in flow */
+  .funnel-page { display: block; min-height: 100vh; overflow-y: auto; }
+  .funnel-body { display: block; padding: 12px 16px 32px; }
+  .funnel-card { padding: 24px 20px; border-radius: var(--radius-lg); max-width: 620px; margin: 0 auto; }
+  .funnel-card h2 { font-size: 1.3rem; margin-bottom: 6px; }
+  .funnel-card > p { font-size: 0.88rem; margin-bottom: 16px; }
+  .funnel-step-label { font-size: 0.72rem; margin-bottom: 8px; }
+  .funnel-options { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+  .funnel-option { padding: 14px 16px; display: flex; flex-direction: row; align-items: center; gap: 14px; text-align: left; min-height: 48px; }
+  .funnel-option .option-icon { margin-bottom: 0; font-size: 1.4rem; }
   .progress-step-label { display: none; }
   .progress-dot { width: 28px; height: 28px; font-size: 0.7rem; }
+  .funnel-progress { padding: 0 16px 12px; }
+
+  /* Nav stays in flow on mobile (not fixed) so content scrolls naturally */
+  .funnel-nav .btn { flex: 1; padding: 16px; font-size: 1rem; }
+  .funnel-back { padding: 8px 12px; }
+  .trust-badges { justify-content: center; gap: 8px; margin-bottom: 12px; }
+  .trust-badge { font-size: 0.7rem; padding: 5px 10px; }
+  .ai-matching { padding: 10px 14px; margin-bottom: 16px; font-size: 0.82rem; gap: 10px; }
+  .ai-matching-icon { width: 30px; height: 30px; }
+  .social-proof { font-size: 0.78rem; margin-bottom: 14px; padding: 6px 12px; }
+  .consent-block { padding: 12px 14px; margin-bottom: 14px; }
+  .consent-label { font-size: 0.75rem; line-height: 1.5; }
+  .form-group { margin-bottom: 12px; }
+
   .calc-main { padding: 28px; }
   .calc-inputs { grid-template-columns: 1fr; }
   .calc-output-row { grid-template-columns: 1fr; }
