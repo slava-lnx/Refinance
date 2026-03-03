@@ -1290,7 +1290,11 @@ export default function Funnel() {
   }); // intentionally no deps — always uses latest closures
 
   return (
-    <div className="funnel-page">
+    <form className="funnel-page" onSubmit={e => e.preventDefault()} id="leadform">
+      {/* Hidden inputs for TrustedForm and SecureRights (scripts inject values into these) */}
+      <input type="hidden" name="xxTrustedFormCertUrl" />
+      <input type="hidden" name="SR_TOKEN" />
+
       {/* Exit Intent Modal */}
       {showExitIntent && (
         <ExitIntentModal
@@ -1403,6 +1407,6 @@ export default function Funnel() {
           )}
         </div>
       </div>
-    </div>
+    </form>
   );
 }
