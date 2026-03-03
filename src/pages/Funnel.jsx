@@ -1011,10 +1011,44 @@ export default function Funnel() {
     };
   }, [submitted, processing, currentStep]);
 
-  // Re-initialize SecureRights form capture when step changes
+  // Initialize SecureRights / LeadiD form capture
+  // LeadiD loads async via GTM — poll until it's available, then init
+  useEffect(() => {
+    let attempts = 0;
+    const maxAttempts = 40; // ~20 seconds total
+
+    const tryInit = () => {
+      attempts++;
+      if (window.LeadiD?.formcapture?.init) {
+        try {
+          window.LeadiD.formcapture.init();
+          console.log('[SR] LeadiD formcapture initialized');
+        } catch (e) {
+          console.warn('[SR] LeadiD init error:', e);
+        }
+        return true;
+      }
+      return false;
+    };
+
+    // Try immediately
+    if (!tryInit() && attempts < maxAttempts) {
+      const interval = setInterval(() => {
+        if (tryInit() || attempts >= maxAttempts) {
+          clearInterval(interval);
+          if (attempts >= maxAttempts) {
+            console.warn('[SR] LeadiD not found after polling — GTM may not be loading it');
+          }
+        }
+      }, 500);
+      return () => clearInterval(interval);
+    }
+  }, []); // Run once on mount
+
+  // Re-initialize SecureRights on step changes (form DOM changes)
   useEffect(() => {
     if (window.LeadiD?.formcapture?.init) {
-      try { window.LeadiD.formcapture.init(); } catch { /* not loaded yet */ }
+      try { window.LeadiD.formcapture.init(); } catch { /* ignore */ }
     }
   }, [currentStep]);
 
@@ -1199,8 +1233,12 @@ export default function Funnel() {
     // find the one with an actual value (skip any empty duplicates)
     const trustedFormCertUrl = Array.from(document.querySelectorAll('input[name="xxTrustedFormCertUrl"]'))
       .map(el => el.value).find(v => v) || '';
-    const srToken = Array.from(document.querySelectorAll('input[name="SR_TOKEN"]'))
+
+    // LeadiD/SecureRights may use "universal_leadid" or "SR_TOKEN" as the field name
+    const srToken = Array.from(document.querySelectorAll('input[name="SR_TOKEN"], input[name="universal_leadid"], input[name="leadid_token"]'))
       .map(el => el.value).find(v => v) || '';
+
+    console.log('[Compliance Tokens]', { trustedFormCertUrl, srToken });
 
     // Build payload (backend handles field mapping to LeadPoint names)
     const payload = {
@@ -1294,6 +1332,7 @@ export default function Funnel() {
       {/* Hidden inputs for TrustedForm and SecureRights (scripts inject values into these) */}
       <input type="hidden" name="xxTrustedFormCertUrl" />
       <input type="hidden" name="SR_TOKEN" />
+      <input type="hidden" id="leadid_token" name="universal_leadid" />
 
       {/* Exit Intent Modal */}
       {showExitIntent && (
