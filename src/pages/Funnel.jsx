@@ -704,15 +704,14 @@ function ResultsScreen({ result, formData, onRetry }) {
    Exit Intent Modal
    ============================================================ */
 
-function ExitIntentModal({ onStay, onLeave }) {
+function ExitIntentModal({ onStay }) {
   return (
     <div className="exit-intent-overlay" role="dialog" aria-modal="true" aria-label="Are you sure you want to leave?">
       <div className="exit-intent-modal">
         <h3>Wait! You're almost there</h3>
-        <p>You're just steps away from seeing your personalized refinance rates. Are you sure you want to leave?</p>
+        <p>You're just steps away from seeing your personalized refinance rates. Don't miss out on potential savings!</p>
         <div className="exit-intent-actions">
           <button className="btn btn-primary" onClick={onStay}>Keep Going</button>
-          <button className="exit-intent-leave" onClick={onLeave}>Leave anyway</button>
         </div>
       </div>
     </div>
@@ -723,10 +722,23 @@ function ExitIntentModal({ onStay, onLeave }) {
    Validation
    ============================================================ */
 
+function hasBogusLetters(str) {
+  const s = str.trim().toLowerCase().replace(/[^a-z]/g, '');
+  if (!s || s.length < 3) return false;
+  // All same letter (e.g. "aaaa")
+  if (/^(.)\1+$/.test(s)) return true;
+  // Repeating 2-char pattern (e.g. "dfdfdf", "ababab")
+  if (/^(.{2})\1{2,}$/.test(s)) return true;
+  // Keyboard mash patterns
+  if (/^(asdf|qwer|zxcv|jkl|fdsa|rewq)/i.test(s)) return true;
+  return false;
+}
+
 const validators = {
   address: v => {
     if (!v.trim()) return 'Please enter your street address.';
     if (v.trim().length < 5) return 'Please enter a valid street address.';
+    if (hasBogusLetters(v)) return 'Please enter a real street address.';
     return true;
   },
   email: v => {
@@ -755,6 +767,7 @@ const validators = {
   mortgage_balance: v => {
     const num = parseCurrencyToNumber(v);
     if (!v.trim() || num === 0) return 'Please enter your current mortgage balance.';
+    if (num < 50000) return 'Mortgage balance must be at least $50,000.';
     if (num > 5000000) return 'Mortgage balance cannot exceed $5,000,000.';
     return true;
   },
@@ -770,12 +783,14 @@ const validators = {
     if (!v.trim()) return 'Please enter your first name.';
     if (v.trim().length < 2) return 'Name must be at least 2 characters.';
     if (/\d/.test(v)) return 'Name cannot contain numbers.';
+    if (hasBogusLetters(v)) return 'Please enter a real name.';
     return true;
   },
   last_name: v => {
     if (!v.trim()) return 'Please enter your last name.';
     if (v.trim().length < 2) return 'Name must be at least 2 characters.';
     if (/\d/.test(v)) return 'Name cannot contain numbers.';
+    if (hasBogusLetters(v)) return 'Please enter a real name.';
     return true;
   },
 };
@@ -833,8 +848,6 @@ export default function Funnel() {
   const location = useLocation();
   const initialData = location.state || {};
   const firstFieldRef = useRef(null);
-  const trustedFormRef = useRef(null);
-  const srTokenRef = useRef(null);
 
   const goalMap = {
     'lower-payment': 'lower-payment',
@@ -886,12 +899,15 @@ export default function Funnel() {
     }
   }, [currentStep, formData, submitted, processing]);
 
-  // Browser back button interception — push state per step
+  // Browser back button interception — show exit modal instead of navigating away
   useEffect(() => {
     const handlePopState = () => {
       if (submitted || processing) return;
-      if (currentStep > 0) {
-        goTo(currentStep - 1);
+      // Re-push state so they stay on the page, then show modal
+      window.history.pushState({ funnelStep: currentStep }, '');
+      if (!exitIntentFired.current) {
+        exitIntentFired.current = true;
+        setShowExitIntent(true);
       }
     };
 
@@ -902,24 +918,12 @@ export default function Funnel() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [currentStep, submitted, processing, goTo]);
+  }, [currentStep, submitted, processing]);
 
-  // Exit intent detection
-  // Desktop: mouse leaves top of viewport
-  // Mobile: 45 seconds of inactivity on any step past step 1
+  // Exit intent detection — 60 seconds of inactivity on any step past step 1
   useEffect(() => {
     if (submitted || processing || currentStep === 0) return;
 
-    // Desktop: mouse leaves viewport
-    const handleMouseLeave = (e) => {
-      if (e.clientY <= 0 && !exitIntentFired.current) {
-        exitIntentFired.current = true;
-        setShowExitIntent(true);
-      }
-    };
-    document.addEventListener('mouseleave', handleMouseLeave);
-
-    // Mobile: inactivity timer (45s)
     let idleTimer = null;
     const resetIdle = () => {
       if (idleTimer) clearTimeout(idleTimer);
@@ -929,14 +933,13 @@ export default function Funnel() {
           exitIntentFired.current = true;
           setShowExitIntent(true);
         }
-      }, 45000);
+      }, 60000);
     };
-    const idleEvents = ['touchstart', 'scroll', 'keydown'];
+    const idleEvents = ['touchstart', 'mousemove', 'scroll', 'keydown'];
     idleEvents.forEach(evt => document.addEventListener(evt, resetIdle, { passive: true }));
     resetIdle(); // start the timer
 
     return () => {
-      document.removeEventListener('mouseleave', handleMouseLeave);
       idleEvents.forEach(evt => document.removeEventListener(evt, resetIdle));
       if (idleTimer) clearTimeout(idleTimer);
     };
@@ -1053,14 +1056,12 @@ export default function Funnel() {
     setSubmitting(true);
 
     // Gather third-party compliance tokens from DOM
-    const trustedFormCertUrl =
-      trustedFormRef.current?.value ||
-      document.querySelector('input[name="xxTrustedFormCertUrl"]')?.value ||
-      '';
-    const srToken =
-      srTokenRef.current?.value ||
-      document.querySelector('input[name="SR_TOKEN"]')?.value ||
-      '';
+    // TrustedForm and SecureRights scripts inject their own hidden inputs —
+    // find the one with an actual value (skip any empty duplicates)
+    const trustedFormCertUrl = Array.from(document.querySelectorAll('input[name="xxTrustedFormCertUrl"]'))
+      .map(el => el.value).find(v => v) || '';
+    const srToken = Array.from(document.querySelectorAll('input[name="SR_TOKEN"]'))
+      .map(el => el.value).find(v => v) || '';
 
     // Build payload (backend handles field mapping to LeadPoint names)
     const payload = {
@@ -1154,7 +1155,6 @@ export default function Funnel() {
       {showExitIntent && (
         <ExitIntentModal
           onStay={() => setShowExitIntent(false)}
-          onLeave={() => { setShowExitIntent(false); window.location.href = '/'; }}
         />
       )}
 
@@ -1169,7 +1169,6 @@ export default function Funnel() {
           </div>
           GetMyRefinance
         </span>
-        <button className="funnel-back" onClick={(e) => { e.preventDefault(); if (currentStep > 0) setShowExitIntent(true); else window.location.href = '/'; }}>{'\u2715'} Exit</button>
       </div>
 
       {/* Stepped Progress Bar */}
@@ -1220,10 +1219,6 @@ export default function Funnel() {
                   firstFieldRef={firstFieldRef}
                 />
               )}
-
-              {/* Hidden compliance fields — populated by third-party scripts */}
-              <input type="hidden" name="xxTrustedFormCertUrl" ref={trustedFormRef} />
-              <input type="hidden" name="SR_TOKEN" ref={srTokenRef} />
 
               {/* Trust badges on final step */}
               {isLast && <TrustBadges />}
