@@ -398,7 +398,7 @@ function FormStep({ step, formData, onChange, onBlur, errors = {}, validated = {
    Consent Block (custom checkbox)
    ============================================================ */
 
-function ConsentBlock({ agreed, onChange, error, tcpaDisclosure }) {
+function ConsentBlock({ agreed, onChange, error }) {
   return (
     <div className={`consent-block${error ? ' consent-error' : ''}`}>
       <label className="consent-label" onClick={e => { e.preventDefault(); onChange(!agreed); }}>
@@ -415,19 +415,12 @@ function ConsentBlock({ agreed, onChange, error, tcpaDisclosure }) {
             </svg>
           )}
         </span>
-        {/* Jornaya TCPA disclosure checkbox — id="leadid_tcpa_disclosure" required by Jornaya */}
         <input type="checkbox" id="leadid_tcpa_disclosure" checked={agreed} readOnly className="sr-only" tabIndex={-1} aria-hidden="true" />
         <span>
-          {tcpaDisclosure ? (
-            <span dangerouslySetInnerHTML={{ __html: tcpaDisclosure }} />
-          ) : (
-            <>
-              By submitting, I agree to the <Link to="/terms-of-service" target="_blank">Terms of Service</Link> and{' '}
-              <Link to="/privacy-policy" target="_blank">Privacy Policy</Link>, and consent to be contacted by
-              GetMyRefinance and its lending partners by phone, email, or text at the number provided, including
-              via automated technology. This is not a condition of purchase. Msg & data rates may apply.
-            </>
-          )}
+          By submitting, I agree to the <Link to="/terms-of-service" target="_blank">Terms of Service</Link> and{' '}
+          <Link to="/privacy-policy" target="_blank">Privacy Policy</Link>, and consent to be contacted by
+          GetMyRefinance and its lending partners by phone, email, or text at the number provided, including
+          via automated technology. This is not a condition of purchase. Msg & data rates may apply.
         </span>
       </label>
       {error && <span className="field-error consent-error-msg" role="alert">{error}</span>}
@@ -1425,9 +1418,14 @@ export default function Funnel() {
               {/* Trust badges on final step */}
               {isLast && <TrustBadges />}
 
-              {/* Consent + TCPA disclosure on final step (Jornaya labels wrap disclosure) */}
+              {/* LeadPoint TCPA disclosure on final step */}
+              {isLast && tcpaDisclosure && (
+                <div id="srDisclosure" dangerouslySetInnerHTML={{ __html: tcpaDisclosure }} />
+              )}
+
+              {/* Consent on final step */}
               {step.hasConsent && (
-                <ConsentBlock agreed={consentAgreed} onChange={(v) => { setConsentAgreed(v); setConsentError(''); }} error={consentError} tcpaDisclosure={tcpaDisclosure} />
+                <ConsentBlock agreed={consentAgreed} onChange={(v) => { setConsentAgreed(v); setConsentError(''); }} error={consentError} />
               )}
 
               {/* Error summary for screen readers */}
