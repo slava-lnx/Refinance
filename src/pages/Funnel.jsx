@@ -949,6 +949,7 @@ export default function Funnel() {
   const [showExitIntent, setShowExitIntent] = useState(false);
   const exitIntentFired = useRef(false);
   const [googleLoaded, setGoogleLoaded] = useState(!!window.google?.maps?.places);
+  const [tcpaDisclosure, setTcpaDisclosure] = useState('');
 
   const goTo = useCallback((idx) => {
     setAnimKey(k => k + 1);
@@ -1059,6 +1060,15 @@ export default function Funnel() {
       return () => clearTimeout(timer);
     }
   }, [currentStep]);
+
+  // Fetch LeadPoint TCPA disclosure on the final step
+  useEffect(() => {
+    if (!isLast || tcpaDisclosure) return;
+    fetch('/api/disclosure')
+      .then(r => r.json())
+      .then(data => { if (data.html) setTcpaDisclosure(data.html); })
+      .catch(() => {}); // non-critical
+  }, [isLast, tcpaDisclosure]);
 
   // Load Google Places API script (client-side key, restricted to domain)
   useEffect(() => {
@@ -1408,8 +1418,10 @@ export default function Funnel() {
               {/* Trust badges on final step */}
               {isLast && <TrustBadges />}
 
-              {/* SecureRights TCPA disclosure — injected by script on final step */}
-              {isLast && <div id="srDisclosure" />}
+              {/* LeadPoint TCPA disclosure on final step */}
+              {isLast && tcpaDisclosure && (
+                <div id="srDisclosure" dangerouslySetInnerHTML={{ __html: tcpaDisclosure }} />
+              )}
 
               {/* Consent on final step */}
               {step.hasConsent && (
