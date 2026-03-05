@@ -1063,12 +1063,13 @@ export default function Funnel() {
 
   // Fetch LeadPoint TCPA disclosure on the final step
   useEffect(() => {
-    if (!isLast || tcpaDisclosure) return;
+    const onLastStep = currentStep === STEPS.length - 1;
+    if (!onLastStep || tcpaDisclosure) return;
     fetch('/api/disclosure')
       .then(r => r.json())
       .then(data => { if (data.html) setTcpaDisclosure(data.html); })
       .catch(() => {}); // non-critical
-  }, [isLast, tcpaDisclosure]);
+  }, [currentStep, tcpaDisclosure]);
 
   // Load Google Places API script (client-side key, restricted to domain)
   useEffect(() => {
