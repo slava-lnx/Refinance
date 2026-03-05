@@ -348,9 +348,9 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .pac-matched { font-weight: 600; color: var(--color-primary); }
 .gm-err-container, .gm-err-message, .gm-style-cc, .gmnoprint { display: none !important; }
 
-/* SecureRights TCPA Disclosure */
-#srDisclosure { font-size: 0.75rem; color: var(--color-text-muted); line-height: 1.6; background: var(--color-bg); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px; }
-#srDisclosure:empty { display: none; }
+/* TCPA Disclosure */
+.tcpa-disclosure { font-size: 0.65rem; color: var(--color-text-muted); line-height: 1.5; margin-top: 16px; padding: 0 4px; }
+.tcpa-disclosure a { color: var(--color-text-muted); text-decoration: underline; }
 
 /* Page Hero */
 .page-hero { padding: 140px 0 60px; background: var(--color-primary); color: #fff; text-align: center; position: relative; overflow: hidden; }

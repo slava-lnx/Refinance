@@ -949,7 +949,6 @@ export default function Funnel() {
   const [showExitIntent, setShowExitIntent] = useState(false);
   const exitIntentFired = useRef(false);
   const [googleLoaded, setGoogleLoaded] = useState(!!window.google?.maps?.places);
-  const [tcpaDisclosure, setTcpaDisclosure] = useState('');
 
   const goTo = useCallback((idx) => {
     setAnimKey(k => k + 1);
@@ -1060,16 +1059,6 @@ export default function Funnel() {
       return () => clearTimeout(timer);
     }
   }, [currentStep]);
-
-  // Fetch LeadPoint TCPA disclosure on the final step
-  useEffect(() => {
-    const onLastStep = currentStep === STEPS.length - 1;
-    if (!onLastStep || tcpaDisclosure) return;
-    fetch('/api/disclosure')
-      .then(r => r.json())
-      .then(data => { if (data.html) setTcpaDisclosure(data.html); })
-      .catch(() => {}); // non-critical
-  }, [currentStep, tcpaDisclosure]);
 
   // Load Google Places API script (client-side key, restricted to domain)
   useEffect(() => {
@@ -1419,11 +1408,6 @@ export default function Funnel() {
               {/* Trust badges on final step */}
               {isLast && <TrustBadges />}
 
-              {/* LeadPoint TCPA disclosure on final step */}
-              {isLast && tcpaDisclosure && (
-                <div id="srDisclosure" dangerouslySetInnerHTML={{ __html: tcpaDisclosure }} />
-              )}
-
               {/* Consent on final step */}
               {step.hasConsent && (
                 <ConsentBlock agreed={consentAgreed} onChange={(v) => { setConsentAgreed(v); setConsentError(''); }} error={consentError} />
@@ -1455,6 +1439,32 @@ export default function Funnel() {
                   </div>
                 )}
               </div>
+
+              {/* LeadPoint TCPA disclosure on final step */}
+              {isLast && (
+                <div className="tcpa-disclosure">
+                  By clicking the button above, you agree to: (1) our{' '}
+                  <Link to="/terms-of-service" target="_blank">TERMS OF USE</Link>, which include a Class Waiver
+                  and Mandatory Arbitration Agreement, (2) our{' '}
+                  <Link to="/privacy-policy" target="_blank">PRIVACY POLICY</Link>, and (3) receive notices and
+                  other COMMUNICATIONS ELECTRONICALLY. By clicking the button above, you: (a) provide your express
+                  written consent and binding signature under the ESIGN Act for Evolute, Inc., a Delaware corporation,
+                  to share your information with up to four (4) of its PREMIER PARTNERS and/or third parties acting
+                  on their behalf to contact you via telephone, mobile device (including SMS and MMS) and/or email,
+                  including but not limited to texts or calls made using an automated telephone dialing system,
+                  AI-generated voice and text messages, or pre-recorded or artificial voice messages, regarding
+                  financial services or other offers related to homeownership; (b) understand that your consent is
+                  valid even if your telephone number is currently listed on any state, federal, local or corporate
+                  Do Not Call list; (c) represent that you are the wireless subscriber or customary user of the
+                  wireless number(s) provided with authority to consent; (d) understand your consent is not required
+                  in order to obtain any good or service; (e) represent that you have received and reviewed the
+                  MORTGAGE BROKER DISCLOSURES for your state; and (f) provide your consent under the Fair Credit
+                  Reporting Act for Evolute, Inc. and/or its PREMIER PARTNERS to obtain information from your
+                  personal credit profile to prequalify you for credit options and connect you with an appropriate
+                  partner. You may choose to speak with an individual service provider by dialing 844-326-3442.
+                  Evolute, Inc. NMLS 2781584.
+                </div>
+              )}
             </>
           )}
         </div>
