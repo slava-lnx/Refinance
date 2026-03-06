@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { identifyChatbaseUser } from '../components/ChatbaseWidget';
+
 
 /* ============================================================
    Formatting Helpers
@@ -1258,9 +1258,6 @@ export default function Funnel() {
       trustedFormCertUrl,
       srToken,
     };
-
-    // Identify user with Chatbase
-    identifyChatbaseUser(formData);
 
     // Clear saved progress
     clearProgress();
