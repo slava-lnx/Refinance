@@ -674,7 +674,6 @@ function ResultsScreen({ result, formData, onRetry }) {
             ))}
           </div>
         </div>
-        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
       </div>
     );
   }
