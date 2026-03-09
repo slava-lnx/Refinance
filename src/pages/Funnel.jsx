@@ -661,29 +661,12 @@ function ResultsScreen({ result, formData, onRetry }) {
         </div>
         <h2 style={{ marginBottom: 8 }}>Great News, {formData.first_name || 'there'}!</h2>
         <p style={{ marginBottom: 24, maxWidth: 460, marginLeft: 'auto', marginRight: 'auto' }}>
-          We matched you with {buyers.length} lender{buyers.length > 1 ? 's' : ''} based on your profile.
-          They will be reaching out to you shortly with personalized offers.
+          Your information has been submitted successfully. Lenders will be reaching out to you shortly with personalized offers.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
-          {buyers.map((buyer, i) => (
-            <div key={i} className="buyer-card">
-              <div className="buyer-card-header">
-                {buyer.logo && buyer.logo !== '-1' && <img src={buyer.logo} alt={buyer.name} className="buyer-logo" />}
-                <strong className="buyer-name">{buyer.name}</strong>
-              </div>
-              {buyer.description && <p className="buyer-desc">{buyer.description}</p>}
-              {(buyer.landingPage || buyer.redirect) && (
-                <a href={buyer.redirect || buyer.landingPage} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ marginTop: 12 }}>
-                  View My Offer
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
         <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 20, marginBottom: 24 }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', marginBottom: 8 }}>What happens next:</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, textAlign: 'left', maxWidth: 380, margin: '0 auto' }}>
-            {['Matched lenders will contact you within minutes', 'Compare their personalized rate offers', 'Choose the best option \u2014 zero obligation'].map((text, i) => (
+            {['Lenders will contact you within minutes', 'Compare their personalized rate offers', 'Choose the best option \u2014 zero obligation'].map((text, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <span style={{ color: 'var(--color-success)', fontWeight: 700 }}>{'\u2713'}</span>
                 <span style={{ fontSize: '0.88rem', color: 'var(--color-text-light)' }}>{text}</span>
