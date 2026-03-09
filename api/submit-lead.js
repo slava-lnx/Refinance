@@ -219,9 +219,12 @@ export default async function handler(req, res) {
     // Loan info
     params.append('LOAN_TYPE', 'FIXED');
     params.append('LOAN_PURP', GOAL_TO_LOAN_PURP[body.goal] || 'lower_payment');
-    params.append('MTG_ONE_INT', rateToRange(body.current_rate));
     params.append('ADD_CASH', String(parseCurrency(body.additional_cash)));
-    params.append('VA_STATUS', 'NO');
+    params.append('VA_STATUS', body.va_status || 'NO');
+    if (body.fha_loan) params.append('FHA_LOAN', body.fha_loan);
+    if (body.income_proof) params.append('INCOME_PROOF', body.income_proof);
+    if (body.bankruptcy) params.append('BANKRUPTCY', body.bankruptcy);
+    if (body.mortgage_lates) params.append('MTG_LATES', body.mortgage_lates);
 
     // Property location (same as personal for refi)
     params.append('PROP_ZIP', zip);
