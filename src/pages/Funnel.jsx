@@ -66,7 +66,7 @@ const STEPS = [
       ), label: 'Cash out refinance', value: 'cash-out' },
       { icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/>
         </svg>
       ), label: 'Lower my monthly payment', value: 'lower-payment' },
       { icon: (
@@ -109,7 +109,7 @@ const STEPS = [
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="2" y="8" width="20" height="12" rx="1"/><polyline points="2 14 22 14"/><line x1="6" y1="8" x2="6" y2="4"/><line x1="18" y1="8" x2="18" y2="4"/>
         </svg>
-      ), label: 'Manufactured Home', value: 'manufactured' },
+      ), label: 'Mftr. Home / Mobile Home', value: 'manufactured' },
     ],
   },
   {
@@ -125,14 +125,14 @@ const STEPS = [
     label: 'Step 4 of 12',
     progressLabel: 'Balance',
     title: 'Current mortgage balance?',
-    subtitle: 'An approximate amount is perfectly fine.',
+    subtitle: "Don't forget to include 2nd mortgage balance.",
     type: 'slider-mortgage-balance',
   },
   {
     id: 'cash-out',
     label: 'Step 5 of 12',
     progressLabel: 'Cash',
-    title: 'How much cash do you need?',
+    title: 'How much cash out do you need?',
     subtitle: 'Many homeowners use cash-out for renovations, debt payoff, or a financial cushion.',
     type: 'slider',
   },
@@ -256,7 +256,7 @@ const STEPS = [
     label: 'Step 11 of 12',
     progressLabel: 'Payments',
     title: 'Any late mortgage payments in the last 12 months?',
-    subtitle: 'Be honest — lenders will verify this.',
+    subtitle: 'This will help us connect you with the best lenders.',
     type: 'options',
     options: [
       { icon: (
@@ -280,7 +280,7 @@ const STEPS = [
     type: 'form',
     fields: [
       { name: 'address', label: 'Street Address', type: 'text', placeholder: '123 Main St', autoComplete: 'off', enterKeyHint: 'next' },
-      { name: 'zip_code', label: 'Property ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'next' },
+      { name: 'zip_code', label: 'ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'next' },
       { name: 'first_name', label: 'First Name', type: 'text', placeholder: 'John', autoComplete: 'given-name', enterKeyHint: 'next' },
       { name: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Smith', autoComplete: 'family-name', enterKeyHint: 'next' },
       { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john@example.com', autoComplete: 'email', inputMode: 'email', enterKeyHint: 'next' },
@@ -358,8 +358,15 @@ function OptionStep({ step, formData, onSelect }) {
    Cash-Out Slider Step
    ============================================================ */
 
-function SliderStep({ fieldName, formData, onChange, min, max, step, label }) {
-  const rawValue = parseCurrencyToNumber(formData[fieldName] || '$0');
+function SliderStep({ fieldName, formData, onChange, min, max, step, label, defaultValue }) {
+  // Set default on first render if no value exists
+  useEffect(() => {
+    if (defaultValue && !formData[fieldName]) {
+      onChange(fieldName, '$' + defaultValue.toLocaleString('en-US'));
+    }
+  }, []);
+
+  const rawValue = parseCurrencyToNumber(formData[fieldName] || (defaultValue ? '$' + defaultValue : '$0'));
   const displayValue = rawValue.toLocaleString('en-US');
 
   const handleSlider = (e) => {
@@ -394,8 +401,22 @@ function SliderStep({ fieldName, formData, onChange, min, max, step, label }) {
 
 function CashOutStep({ formData, onChange }) {
   const homeValue = parseCurrencyToNumber(formData['home_value'] || '$0');
+  const mortgageBalance = parseCurrencyToNumber(formData['mortgage_balance'] || '$0');
   const maxCashOut = homeValue || 100000;
-  const rawValue = Math.min(parseCurrencyToNumber(formData['additional_cash'] || '$0'), maxCashOut);
+
+  // Default: 80% of home value minus mortgage balance, or $30k
+  const defaultCashOut = homeValue > 0
+    ? Math.max(0, Math.round((homeValue * 0.8 - mortgageBalance) / 5000) * 5000)
+    : 30000;
+
+  useEffect(() => {
+    if (!formData['additional_cash']) {
+      const val = Math.min(defaultCashOut, maxCashOut);
+      onChange('additional_cash', val === 0 ? '$0' : '$' + val.toLocaleString('en-US'));
+    }
+  }, []);
+
+  const rawValue = Math.min(parseCurrencyToNumber(formData['additional_cash'] || '$' + defaultCashOut), maxCashOut);
   const displayValue = rawValue.toLocaleString('en-US');
 
   const handleSlider = (e) => {
@@ -1392,9 +1413,9 @@ export default function Funnel() {
               ) : step.type === 'slider' ? (
                 <CashOutStep formData={formData} onChange={handleFieldChange} />
               ) : step.type === 'slider-home-value' ? (
-                <SliderStep fieldName="home_value" formData={formData} onChange={handleFieldChange} min={50000} max={2000000} step={10000} label="Estimated home value" />
+                <SliderStep fieldName="home_value" formData={formData} onChange={handleFieldChange} min={50000} max={2000000} step={10000} label="Estimated home value" defaultValue={350000} />
               ) : step.type === 'slider-mortgage-balance' ? (
-                <SliderStep fieldName="mortgage_balance" formData={formData} onChange={handleFieldChange} min={50000} max={2000000} step={10000} label="Current mortgage balance" />
+                <SliderStep fieldName="mortgage_balance" formData={formData} onChange={handleFieldChange} min={10000} max={parseCurrencyToNumber(formData['home_value'] || '$350,000') || 350000} step={5000} label="Current mortgage balance" defaultValue={Math.round((parseCurrencyToNumber(formData['home_value'] || '$350,000') || 350000) * 0.7)} />
               ) : (
                 <FormStep
                   step={step}
