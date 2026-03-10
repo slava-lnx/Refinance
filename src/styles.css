@@ -212,7 +212,7 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .funnel-page { min-height: 100vh; background: var(--color-bg); display: flex; flex-direction: column; }
 .funnel-header { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
 .funnel-logo-static { cursor: default; pointer-events: none; }
-.funnel-progress { padding: 0 24px 20px; max-width: 700px; margin: 0 auto; width: 100%; }
+.funnel-progress { padding: 32px 24px 20px; max-width: 700px; margin: 0 auto; width: 100%; }
 .progress-steps { display: flex; align-items: center; justify-content: space-between; position: relative; }
 .progress-steps::before { content: ''; position: absolute; top: 16px; left: 24px; right: 24px; height: 3px; background: var(--color-border); border-radius: 2px; z-index: 0; }
 .progress-fill-track { position: absolute; top: 16px; left: 24px; height: 3px; background: linear-gradient(90deg, var(--color-primary-mid), var(--color-secondary)); border-radius: 2px; z-index: 1; transition: width 0.5s ease; }
