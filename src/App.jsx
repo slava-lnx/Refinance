@@ -3,6 +3,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Funnel from './pages/Funnel';
+import Home from './pages/Home';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
             <>
               <Header />
               <Routes>
+                <Route path="/home" element={<Home />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
               </Routes>

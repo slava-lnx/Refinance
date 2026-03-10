@@ -695,6 +695,7 @@ function ResultsScreen({ result, formData, onRetry }) {
             ))}
           </div>
         </div>
+        <Link to="/home" className="btn btn-secondary">Return to Homepage</Link>
       </div>
     );
   }
@@ -712,7 +713,7 @@ function ResultsScreen({ result, formData, onRetry }) {
         <p style={{ marginBottom: 32, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
           Your information has been submitted. Matched lenders will reach out to you shortly with personalized offers.
         </p>
-        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+        <Link to="/home" className="btn btn-secondary">Return to Homepage</Link>
       </div>
     );
   }
@@ -735,7 +736,7 @@ function ResultsScreen({ result, formData, onRetry }) {
         <p style={{ marginBottom: 32, fontSize: '0.88rem', color: 'var(--color-text-muted)', maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
           Check your email at <strong>{formData.email}</strong> for updates.
         </p>
-        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+        <Link to="/home" className="btn btn-secondary">Return to Homepage</Link>
       </div>
     );
   }
@@ -754,7 +755,7 @@ function ResultsScreen({ result, formData, onRetry }) {
           Unfortunately, we couldn't find a matching lender for your profile at this time.
           Lender availability changes frequently — consider trying again in a few days.
         </p>
-        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+        <Link to="/home" className="btn btn-secondary">Return to Homepage</Link>
       </div>
     );
   }
@@ -773,7 +774,7 @@ function ResultsScreen({ result, formData, onRetry }) {
           It looks like we already have your information on file. The lenders we matched you with
           previously should be reaching out soon. Check your email and phone for their offers.
         </p>
-        <Link to="/" className="btn btn-secondary">Return to Homepage</Link>
+        <Link to="/home" className="btn btn-secondary">Return to Homepage</Link>
       </div>
     );
   }
@@ -1366,7 +1367,7 @@ export default function Funnel() {
 
       {/* Header */}
       <div className="funnel-header">
-        <span className="logo funnel-logo-static">
+        <Link to="/home" className="logo funnel-logo-static" style={{ textDecoration: 'none' }}>
           <div className="logo-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
@@ -1374,7 +1375,7 @@ export default function Funnel() {
             </svg>
           </div>
           GetMyRefinance
-        </span>
+        </Link>
       </div>
 
       {/* Stepped Progress Bar */}
