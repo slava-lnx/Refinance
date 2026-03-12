@@ -212,22 +212,23 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .funnel-page { min-height: 100vh; background: var(--color-bg); display: flex; flex-direction: column; }
 .funnel-header { padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; }
 .funnel-logo-static { cursor: default; pointer-events: none; }
-.funnel-progress { padding: 32px 24px 20px; max-width: 700px; margin: 0 auto; width: 100%; }
-.progress-steps { display: flex; align-items: center; justify-content: space-between; position: relative; }
-.progress-steps::before { content: ''; position: absolute; top: 16px; left: 24px; right: 24px; height: 3px; background: var(--color-border); border-radius: 2px; z-index: 0; }
-.progress-fill-track { position: absolute; top: 16px; left: 24px; height: 3px; background: linear-gradient(90deg, var(--color-primary-mid), var(--color-secondary)); border-radius: 2px; z-index: 1; transition: width 0.5s ease; }
-.progress-step { display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; z-index: 2; }
-.progress-dot { width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 3px solid var(--color-border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); transition: var(--transition); }
-.progress-step.active .progress-dot { border-color: var(--color-primary-mid); background: var(--color-primary-mid); color: #fff; box-shadow: 0 0 0 4px rgba(67,56,202,0.15); }
-.progress-step.completed .progress-dot { border-color: var(--color-primary-mid); background: var(--color-primary-mid); color: #fff; }
-.progress-step-label { font-size: 0.68rem; font-weight: 600; color: var(--color-text-muted); text-align: center; max-width: 70px; line-height: 1.3; transition: var(--transition); }
-.progress-step.active .progress-step-label { color: var(--color-primary); }
-.progress-step.completed .progress-step-label { color: var(--color-primary-mid); }
+.funnel-progress { padding: 32px 24px 12px; max-width: 700px; margin: 0 auto; width: 100%; }
+.simple-progress-track { width: 100%; height: 10px; background: var(--color-border); border-radius: 5px; overflow: hidden; }
+.simple-progress-fill { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--color-primary-mid), var(--color-secondary)); transition: width 0.5s ease; position: relative; overflow: hidden; }
+.simple-progress-fill::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); animation: shimmer 2s infinite; }
+@keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
+@-webkit-keyframes shimmer { 0% { left: -100%; } 100% { left: 200%; } }
 
 .funnel-body { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px 24px 60px; }
-.funnel-card { background: #fff; border-radius: var(--radius-xl); padding: 52px 48px; max-width: 620px; width: 100%; box-shadow: var(--shadow-xl); -webkit-animation: fadeUp 0.35s ease; animation: fadeUp 0.35s ease; will-change: transform, opacity; }
-@-webkit-keyframes fadeUp { from { opacity: 0; -webkit-transform: translateY(16px); transform: translateY(16px); } to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); } }
+.funnel-card { background: linear-gradient(165deg, #FFFFFF 0%, #FAFBFF 50%, #F5F6FF 100%); border-radius: var(--radius-xl); padding: 52px 48px; max-width: 620px; width: 100%; box-shadow: var(--shadow-xl); will-change: transform, opacity; }
+.funnel-card.slide-forward { animation: slideLeft 0.35s ease; }
+.funnel-card.slide-back { animation: slideRight 0.35s ease; }
+@keyframes slideLeft { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
+@-webkit-keyframes slideLeft { from { opacity: 0; -webkit-transform: translateX(40px); } to { opacity: 1; -webkit-transform: translateX(0); } }
+@keyframes slideRight { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: translateX(0); } }
+@-webkit-keyframes slideRight { from { opacity: 0; -webkit-transform: translateX(-40px); } to { opacity: 1; -webkit-transform: translateX(0); } }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@-webkit-keyframes fadeUp { from { opacity: 0; -webkit-transform: translateY(16px); } to { opacity: 1; -webkit-transform: translateY(0); } }
 
 /* Shake animation for validation errors */
 .funnel-card.shake { -webkit-animation: shakeCard 0.45s ease; animation: shakeCard 0.45s ease; }
@@ -239,10 +240,12 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .funnel-card h2 { color: var(--color-primary); font-size: 1.6rem; margin-bottom: 8px; }
 .funnel-card > p { font-size: 0.92rem; margin-bottom: 30px; }
 .funnel-options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
-.funnel-option { background: var(--color-bg); border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; min-height: 48px; text-align: center; cursor: pointer; transition: var(--transition); font-weight: 500; color: var(--color-text); outline: none; }
-.funnel-option:hover, .funnel-option:focus-visible { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.03); }
+.funnel-option { background: var(--color-bg); border: 2px solid var(--color-border); border-radius: var(--radius-md); padding: 20px; min-height: 48px; text-align: center; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); font-weight: 500; color: var(--color-text); outline: none; box-shadow: 0 1px 3px rgba(26,17,80,0.04); position: relative; }
+.funnel-option:hover, .funnel-option:focus-visible { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.03); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(26,17,80,0.1); }
+.funnel-option:active { transform: translateY(0) scale(0.98); }
 .funnel-option:focus-visible { box-shadow: 0 0 0 3px rgba(67,56,202,0.2); }
-.funnel-option.selected { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.06); color: var(--color-primary); }
+.funnel-option.selected { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.06); color: var(--color-primary); box-shadow: 0 4px 16px rgba(67,56,202,0.15); }
+.funnel-option.selected::after { content: '\2713'; position: absolute; top: 8px; right: 10px; width: 20px; height: 20px; background: var(--color-primary-mid); color: #fff; border-radius: 50%; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; animation: checkPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .funnel-option .option-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
 .funnel-option .option-label { font-size: 0.88rem; }
 
@@ -323,6 +326,19 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .buyer-name { font-size: 1.05rem; color: var(--color-primary); }
 .buyer-desc { font-size: 0.88rem; color: var(--color-text-light); margin-bottom: 8px; }
 
+/* Equity Calculator Step */
+.equity-calculator { margin-bottom: 24px; }
+.equity-calc-section { margin-bottom: 20px; }
+.equity-calc-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; font-weight: 600; color: var(--color-text); }
+.equity-calc-value { font-family: var(--font-body); font-size: 1.15rem; font-weight: 800; color: var(--color-primary); }
+.equity-result { background: var(--color-primary); border-radius: var(--radius-md); padding: 24px; margin-top: 8px; }
+.equity-result-row { display: flex; justify-content: space-around; gap: 20px; text-align: center; }
+.equity-result-item { display: flex; flex-direction: column; gap: 4px; }
+.equity-result-label { font-size: 0.78rem; color: rgba(255,255,255,0.6); font-weight: 500; }
+.equity-result-amount { font-family: var(--font-body); font-size: 1.8rem; font-weight: 800; color: #fff; }
+.equity-result-ltv { font-family: var(--font-body); font-size: 1.8rem; font-weight: 800; color: var(--color-secondary); }
+.equity-result-message { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.88rem; color: rgba(255,255,255,0.85); font-weight: 500; }
+
 /* Cash-Out Slider Step */
 .cashout-step { text-align: center; }
 .cashout-amount-display { margin-bottom: 20px; }
@@ -347,6 +363,11 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .pac-item-query { font-size: 0.88rem; color: var(--color-text); }
 .pac-matched { font-weight: 600; color: var(--color-primary); }
 .gm-err-container, .gm-err-message, .gm-style-cc, .gmnoprint { display: none !important; }
+
+/* Lender logos */
+.lender-logos { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; margin-top: 4px; padding: 12px 16px; background: var(--color-bg); border-radius: var(--radius-sm); }
+.lender-logos-label { font-size: 0.72rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+.lender-logo-item { font-size: 0.78rem; font-weight: 700; color: var(--color-text-muted); opacity: 0.6; letter-spacing: 0.5px; }
 
 /* TCPA Disclosure */
 .tcpa-disclosure { font-size: 0.65rem; color: var(--color-text-muted); line-height: 1.5; margin-top: 16px; padding: 0 4px; }
@@ -427,6 +448,7 @@ p { color: var(--color-text-light); line-height: 1.8; }
   .funnel-options { grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
   .funnel-option { padding: 14px 16px; display: flex; flex-direction: row; align-items: center; gap: 14px; text-align: left; min-height: 48px; }
   .funnel-option .option-icon { margin-bottom: 0; font-size: 1.4rem; }
+  .funnel-option.selected::after { top: 50%; right: 12px; transform: translateY(-50%); }
   .progress-step-label { display: none; }
   .progress-dot { width: 28px; height: 28px; font-size: 0.7rem; }
   .funnel-progress { padding: 0 16px 12px; }

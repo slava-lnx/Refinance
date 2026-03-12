@@ -52,9 +52,13 @@ function detectEmailTypo(email) {
 
 const STEPS = [
   {
+    id: 'equity-calculator',
+    title: 'How Much Could You Save?',
+    subtitle: 'Enter your home details to see your estimated equity and refinance potential.',
+    type: 'equity-calculator',
+  },
+  {
     id: 'goal',
-    label: 'Step 1 of 12',
-    progressLabel: 'Goal',
     title: 'What is your refinance goal?',
     subtitle: 'This helps us match you with the right lenders.',
     type: 'options',
@@ -83,8 +87,6 @@ const STEPS = [
   },
   {
     id: 'property-type',
-    label: 'Step 2 of 12',
-    progressLabel: 'Property',
     title: 'What type of property is it?',
     subtitle: 'Select the type that best describes your home.',
     type: 'options',
@@ -113,33 +115,13 @@ const STEPS = [
     ],
   },
   {
-    id: 'home-value',
-    label: 'Step 3 of 12',
-    progressLabel: 'Value',
-    title: 'Estimated home value?',
-    subtitle: "Your best estimate is fine — we'll verify later.",
-    type: 'slider-home-value',
-  },
-  {
-    id: 'mortgage-balance',
-    label: 'Step 4 of 12',
-    progressLabel: 'Balance',
-    title: 'Current mortgage balance?',
-    subtitle: "Don't forget to include 2nd mortgage balance.",
-    type: 'slider-mortgage-balance',
-  },
-  {
     id: 'cash-out',
-    label: 'Step 5 of 12',
-    progressLabel: 'Cash',
     title: 'How much cash out do you need?',
     subtitle: 'Many homeowners use cash-out for renovations, debt payoff, or a financial cushion.',
     type: 'slider',
   },
   {
     id: 'credit',
-    label: 'Step 6 of 12',
-    progressLabel: 'Credit',
     title: 'Estimated credit score?',
     subtitle: "This won't affect your credit. We just need a range.",
     type: 'options',
@@ -168,8 +150,6 @@ const STEPS = [
   },
   {
     id: 'va-status',
-    label: 'Step 7 of 12',
-    progressLabel: 'VA',
     title: 'Are you a veteran or active military?',
     subtitle: 'VA loans offer special benefits for eligible borrowers.',
     type: 'options',
@@ -188,8 +168,6 @@ const STEPS = [
   },
   {
     id: 'fha-loan',
-    label: 'Step 8 of 12',
-    progressLabel: 'FHA',
     title: 'Is your current loan an FHA loan?',
     subtitle: 'FHA loans have different refinance options.',
     type: 'options',
@@ -213,8 +191,6 @@ const STEPS = [
   },
   {
     id: 'income-proof',
-    label: 'Step 9 of 12',
-    progressLabel: 'Income',
     title: 'Can you provide proof of income?',
     subtitle: 'Lenders typically require documentation of your income.',
     type: 'options',
@@ -233,8 +209,6 @@ const STEPS = [
   },
   {
     id: 'bankruptcy',
-    label: 'Step 10 of 12',
-    progressLabel: 'History',
     title: 'Any bankruptcy or foreclosure in the last 3 years?',
     subtitle: 'This helps lenders determine your eligibility.',
     type: 'options',
@@ -253,8 +227,6 @@ const STEPS = [
   },
   {
     id: 'mortgage-lates',
-    label: 'Step 11 of 12',
-    progressLabel: 'Payments',
     title: 'Any late mortgage payments in the last 12 months?',
     subtitle: 'This will help us connect you with the best lenders.',
     type: 'options',
@@ -273,16 +245,30 @@ const STEPS = [
   },
   {
     id: 'zip',
-    label: 'Step 12 of 12 \u2014 Almost Done!',
-    progressLabel: 'Contact',
     title: 'Where is your property located?',
-    subtitle: 'Rates vary by location \u2014 this helps us find local offers.',
+    subtitle: 'Rates vary by location — this helps us find local offers.',
     type: 'form',
     fields: [
       { name: 'address', label: 'Street Address', type: 'text', placeholder: '123 Main St', autoComplete: 'off', enterKeyHint: 'next' },
-      { name: 'zip_code', label: 'ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'next' },
+      { name: 'zip_code', label: 'ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'done' },
+    ],
+  },
+  {
+    id: 'name',
+    title: 'What is your name?',
+    subtitle: 'So lenders know who to prepare your offer for.',
+    type: 'form',
+    fields: [
       { name: 'first_name', label: 'First Name', type: 'text', placeholder: 'John', autoComplete: 'given-name', enterKeyHint: 'next' },
-      { name: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Smith', autoComplete: 'family-name', enterKeyHint: 'next' },
+      { name: 'last_name', label: 'Last Name', type: 'text', placeholder: 'Smith', autoComplete: 'family-name', enterKeyHint: 'done' },
+    ],
+  },
+  {
+    id: 'contact',
+    title: 'How can lenders reach you?',
+    subtitle: 'We\'ll send your personalized offers here.',
+    type: 'form',
+    fields: [
       { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john@example.com', autoComplete: 'email', inputMode: 'email', enterKeyHint: 'next' },
       { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '(555) 123-4567', autoComplete: 'tel', inputMode: 'tel', enterKeyHint: 'done' },
     ],
@@ -293,27 +279,14 @@ const STEPS = [
    Progress Bar
    ============================================================ */
 
+
 function SteppedProgress({ currentStep, totalSteps }) {
-  const fillPercent = currentStep / (totalSteps - 1) * 100;
+  const fillPercent = ((currentStep + 1) / totalSteps) * 100;
 
   return (
     <div className="funnel-progress" role="progressbar" aria-valuenow={currentStep + 1} aria-valuemin={1} aria-valuemax={totalSteps} aria-label={`Step ${currentStep + 1} of ${totalSteps}`}>
-      <div className="progress-steps">
-        <div
-          className="progress-fill-track"
-          style={{ width: `calc(${fillPercent / 100} * (100% - 48px))` }}
-        />
-        {STEPS.map((step, i) => (
-          <div
-            key={step.id}
-            className={`progress-step${i === currentStep ? ' active' : ''}${i < currentStep ? ' completed' : ''}`}
-          >
-            <div className="progress-dot" aria-hidden="true">
-              {i < currentStep ? '\u2713' : i + 1}
-            </div>
-            <span className="progress-step-label">{step.progressLabel}</span>
-          </div>
-        ))}
+      <div className="simple-progress-track">
+        <div className="simple-progress-fill" style={{ width: `${fillPercent}%` }} />
       </div>
     </div>
   );
@@ -324,6 +297,18 @@ function SteppedProgress({ currentStep, totalSteps }) {
    ============================================================ */
 
 function OptionStep({ step, formData, onSelect }) {
+  // Keyboard number shortcuts (1-9) to select options
+  useEffect(() => {
+    const handler = (e) => {
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= step.options.length) {
+        onSelect(step.id, step.options[num - 1].value);
+      }
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [step.id, step.options, onSelect]);
+
   const handleKeyDown = (e, value) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -333,7 +318,7 @@ function OptionStep({ step, formData, onSelect }) {
 
   return (
     <div className="funnel-options" role="radiogroup" aria-label={step.title}>
-      {step.options.map(opt => {
+      {step.options.map((opt) => {
         const isSelected = formData[step.id] === opt.value;
         return (
           <div
@@ -355,45 +340,102 @@ function OptionStep({ step, formData, onSelect }) {
 }
 
 /* ============================================================
-   Cash-Out Slider Step
+   Equity Calculator Step (cashoutequity.com-inspired opening)
    ============================================================ */
 
-function SliderStep({ fieldName, formData, onChange, min, max, step, label, defaultValue }) {
-  // Set default on first render if no value exists
+function EquityCalculatorStep({ formData, onChange }) {
+  const defaultHomeValue = 350000;
+  const defaultMortgage = 245000;
+
+  // Set defaults on first render
   useEffect(() => {
-    if (defaultValue && !formData[fieldName]) {
-      onChange(fieldName, '$' + defaultValue.toLocaleString('en-US'));
+    if (!formData['home_value']) {
+      onChange('home_value', '$' + defaultHomeValue.toLocaleString('en-US'));
     }
-  }, []);
+    if (!formData['mortgage_balance']) {
+      onChange('mortgage_balance', '$' + defaultMortgage.toLocaleString('en-US'));
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const rawValue = parseCurrencyToNumber(formData[fieldName] || (defaultValue ? '$' + defaultValue : '$0'));
-  const displayValue = rawValue.toLocaleString('en-US');
+  const homeValue = parseCurrencyToNumber(formData['home_value'] || '$' + defaultHomeValue);
+  const mortgageBalance = parseCurrencyToNumber(formData['mortgage_balance'] || '$' + defaultMortgage);
+  const equity = Math.max(0, homeValue - mortgageBalance);
+  const ltv = homeValue > 0 ? Math.round((mortgageBalance / homeValue) * 100) : 0;
+  const maxMortgage = homeValue || 2000000;
 
-  const handleSlider = (e) => {
+  const handleHomeSlider = (e) => {
     const val = Number(e.target.value);
-    onChange(fieldName, val === 0 ? '$0' : '$' + val.toLocaleString('en-US'));
+    onChange('home_value', '$' + val.toLocaleString('en-US'));
+  };
+
+  const handleMortgageSlider = (e) => {
+    const val = Number(e.target.value);
+    onChange('mortgage_balance', '$' + val.toLocaleString('en-US'));
   };
 
   return (
-    <div className="cashout-step">
-      <div className="cashout-amount-display">
-        <span className="cashout-dollar">${displayValue}</span>
+    <div className="equity-calculator">
+      <div className="equity-calc-section">
+        <label className="equity-calc-label">
+          <span>Home Value</span>
+          <span className="equity-calc-value">${homeValue.toLocaleString('en-US')}</span>
+        </label>
+        <input
+          type="range"
+          min={50000}
+          max={2000000}
+          step={10000}
+          value={homeValue}
+          onChange={handleHomeSlider}
+          className="cashout-slider"
+          aria-label="Estimated home value"
+        />
+        <div className="cashout-range-labels">
+          <span>$50,000</span>
+          <span>$2,000,000</span>
+        </div>
       </div>
 
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={rawValue}
-        onChange={handleSlider}
-        className="cashout-slider"
-        aria-label={label}
-      />
+      <div className="equity-calc-section">
+        <label className="equity-calc-label">
+          <span>Mortgage Balance</span>
+          <span className="equity-calc-value">${mortgageBalance.toLocaleString('en-US')}</span>
+        </label>
+        <input
+          type="range"
+          min={10000}
+          max={maxMortgage}
+          step={5000}
+          value={Math.min(mortgageBalance, maxMortgage)}
+          onChange={handleMortgageSlider}
+          className="cashout-slider"
+          aria-label="Current mortgage balance"
+        />
+        <div className="cashout-range-labels">
+          <span>$10,000</span>
+          <span>${maxMortgage.toLocaleString('en-US')}</span>
+        </div>
+      </div>
 
-      <div className="cashout-range-labels">
-        <span>${min.toLocaleString('en-US')}</span>
-        <span>${max.toLocaleString('en-US')}</span>
+      <div className="equity-result">
+        <div className="equity-result-row">
+          <div className="equity-result-item">
+            <span className="equity-result-label">Your Estimated Equity</span>
+            <span className="equity-result-amount">${equity.toLocaleString('en-US')}</span>
+          </div>
+          <div className="equity-result-item">
+            <span className="equity-result-label">Loan-to-Value</span>
+            <span className="equity-result-ltv">{ltv}%</span>
+          </div>
+        </div>
+        {equity > 20000 && (
+          <p className="equity-result-message">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            You may qualify for competitive refinance rates!
+          </p>
+        )}
       </div>
     </div>
   );
@@ -509,13 +551,38 @@ function FormStep({ step, formData, onChange, onBlur, errors = {}, validated = {
    Social Proof
    ============================================================ */
 
-function SocialProof() {
+const SOCIAL_PROOF_MESSAGES = {
+  'equity-calculator': '3,247 homeowners checked their equity this week',
+  'goal': 'Most homeowners save $200+/mo by refinancing',
+  'property-type': '89% of applicants get matched with 3+ lenders',
+  'credit': 'All credit scores welcome — we have options for everyone',
+  'va-status': 'Over 500 veterans matched this month',
+  'zip': '98% of users complete this step in under 60 seconds',
+  'contact': 'Your info is protected with 256-bit encryption',
+};
+
+function SocialProof({ stepId }) {
+  const message = SOCIAL_PROOF_MESSAGES[stepId];
+  if (!message) return null;
+
   return (
     <div className="social-proof" aria-label="Social proof">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4-4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
       </svg>
-      <span>3,247 homeowners matched this week</span>
+      <span>{message}</span>
+    </div>
+  );
+}
+
+function LenderLogos() {
+  return (
+    <div className="lender-logos">
+      <span className="lender-logos-label">Trusted by</span>
+      <span className="lender-logo-item">Quicken Loans</span>
+      <span className="lender-logo-item">LoanDepot</span>
+      <span className="lender-logo-item">Veterans United</span>
+      <span className="lender-logo-item">+ more</span>
     </div>
   );
 }
@@ -972,6 +1039,7 @@ export default function Funnel() {
   const [submitted, setSubmitted] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [animKey, setAnimKey] = useState(0);
+  const [slideDir, setSlideDir] = useState('forward');
   const [fieldErrors, setFieldErrors] = useState({});
   const [emailSuggestion, setEmailSuggestion] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -982,11 +1050,12 @@ export default function Funnel() {
   const [googleLoaded, setGoogleLoaded] = useState(!!window.google?.maps?.places);
 
   const goTo = useCallback((idx) => {
+    setSlideDir(idx > currentStep ? 'forward' : 'back');
     setAnimKey(k => k + 1);
     setCurrentStep(idx);
     setFieldErrors({});
     setValidatedFields({});
-  }, []);
+  }, [currentStep]);
 
   // Persist progress to sessionStorage
   useEffect(() => {
@@ -1372,7 +1441,7 @@ export default function Funnel() {
 
       {/* Body */}
       <div className="funnel-body">
-        <div className={`funnel-card${submitted || processing ? '' : ' step-active'}`} key={animKey}>
+        <div className={`funnel-card${submitted || processing ? '' : ` slide-${slideDir}`}`} key={animKey}>
           {processing ? (
             <ProcessingScreen />
           ) : submitted ? (
@@ -1388,22 +1457,19 @@ export default function Funnel() {
             />
           ) : (
             <>
-              <div className="funnel-step-label">{step.label}</div>
               <h2>{step.title}</h2>
               <p>{step.subtitle}</p>
 
-              {/* Social proof on first step */}
-              {step.id === 'goal' && <SocialProof />}
+              {/* Social proof on key steps */}
+              <SocialProof stepId={step.id} />
 
 
-              {step.type === 'options' ? (
+              {step.type === 'equity-calculator' ? (
+                <EquityCalculatorStep formData={formData} onChange={handleFieldChange} />
+              ) : step.type === 'options' ? (
                 <OptionStep step={step} formData={formData} onSelect={handleOptionSelect} />
               ) : step.type === 'slider' ? (
                 <CashOutStep formData={formData} onChange={handleFieldChange} />
-              ) : step.type === 'slider-home-value' ? (
-                <SliderStep fieldName="home_value" formData={formData} onChange={handleFieldChange} min={50000} max={2000000} step={10000} label="Estimated home value" defaultValue={350000} />
-              ) : step.type === 'slider-mortgage-balance' ? (
-                <SliderStep fieldName="mortgage_balance" formData={formData} onChange={handleFieldChange} min={10000} max={parseCurrencyToNumber(formData['home_value'] || '$350,000') || 350000} step={5000} label="Current mortgage balance" defaultValue={Math.round((parseCurrencyToNumber(formData['home_value'] || '$350,000') || 350000) * 0.7)} />
               ) : (
                 <FormStep
                   step={step}
@@ -1418,7 +1484,8 @@ export default function Funnel() {
                 />
               )}
 
-              {/* Trust badges on final step */}
+              {/* Lender logos + Trust badges on final step */}
+              {isLast && <LenderLogos />}
               {isLast && <TrustBadges />}
 
               {/* Error summary for screen readers */}
@@ -1433,7 +1500,7 @@ export default function Funnel() {
                   </button>
                 ) : <div />}
 
-                {(step.type === 'form' || step.type === 'slider' || step.type === 'slider-home-value' || step.type === 'slider-mortgage-balance') && (
+                {(step.type === 'form' || step.type === 'slider' || step.type === 'equity-calculator') && (
                   <div className="funnel-cta-wrap">
                     {isLast ? (
                       <button className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
