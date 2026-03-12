@@ -504,7 +504,7 @@ const SOCIAL_PROOF_MESSAGES = {
   'property-type': '89% of applicants get matched with 3+ lenders',
   'credit': 'All credit scores welcome — we have options for everyone',
   'va-status': 'Over 500 veterans matched this month',
-  'zip': '98% of users complete this step in under 60 seconds',
+  'zip': null,
   'contact': 'Your info is protected with 256-bit encryption',
 };
 
