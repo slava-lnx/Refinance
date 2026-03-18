@@ -59,12 +59,6 @@ function detectEmailTypo(email) {
 
 const ALL_STEPS = [
   {
-    id: 'heloc-amount',
-    title: 'How much do you want to borrow with a HELOC?',
-    subtitle: 'Loan requests of $10,000 or more typically see higher approval rates.',
-    type: 'slider-heloc-amount',
-  },
-  {
     id: 'property-type',
     title: "What type of property is your home?",
     subtitle: 'This helps us match you with the right HELOC offers.',
@@ -120,6 +114,12 @@ const ALL_STEPS = [
         </svg>
       ), label: 'Rental Property', value: 'rental' },
     ],
+  },
+  {
+    id: 'heloc-amount',
+    title: 'How much do you want to borrow with a HELOC?',
+    subtitle: 'Loan requests of $10,000 or more typically see higher approval rates.',
+    type: 'slider-heloc-amount',
   },
   {
     id: 'heloc-purpose',
