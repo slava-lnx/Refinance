@@ -2,6 +2,9 @@
   "functions": {
     "api/submit-lead.js": {
       "maxDuration": 15
+    },
+    "api/submit-heloc-lead.js": {
+      "maxDuration": 15
     }
   },
   "rewrites": [

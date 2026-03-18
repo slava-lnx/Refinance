@@ -400,6 +400,34 @@ p { color: var(--color-text-light); line-height: 1.8; }
 .article-body p { font-size: 0.85rem; margin-bottom: 14px; }
 .article-body .read-more { font-size: 0.84rem; font-weight: 600; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 4px; }
 
+/* ============================================
+   HELOC Funnel Styles
+   ============================================ */
+
+/* Breadcrumb navigation */
+.heloc-progress-wrap { padding: 20px 24px 0; max-width: 700px; margin: 0 auto; width: 100%; }
+.heloc-breadcrumbs { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.heloc-breadcrumb { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.5px; color: var(--color-text-muted); padding: 4px 10px; border-radius: 50px; transition: var(--transition); white-space: nowrap; }
+.heloc-breadcrumb.active { color: var(--color-primary); background: rgba(67,56,202,0.08); }
+.heloc-breadcrumb.done { color: var(--color-success); }
+.heloc-breadcrumb + .heloc-breadcrumb::before { content: '\203A'; margin-right: 6px; color: var(--color-border); font-weight: 400; }
+
+/* HELOC progress bar override (teal accent) */
+.heloc-progress-fill { background: linear-gradient(90deg, #0891B2, var(--color-accent)) !important; }
+
+/* Quick amount buttons */
+.heloc-quick-amounts { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 16px; margin-bottom: 20px; }
+.heloc-quick-btn { padding: 8px 16px; font-size: 0.82rem; font-weight: 600; border-radius: 50px; background: var(--color-bg); border: 1.5px solid var(--color-border); color: var(--color-text-light); cursor: pointer; transition: var(--transition); font-family: var(--font-body); }
+.heloc-quick-btn:hover { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.03); transform: translateY(-1px); }
+.heloc-quick-btn.active { border-color: var(--color-primary-mid); background: rgba(67,56,202,0.08); color: var(--color-primary); box-shadow: 0 2px 8px rgba(67,56,202,0.15); }
+
+/* HELOC funnel card accent — subtle teal border top */
+.heloc-funnel .funnel-card { border-top: 3px solid var(--color-accent); }
+
+/* HELOC step label override */
+.heloc-funnel .funnel-step-label { color: var(--color-accent); }
+.heloc-funnel .funnel-step-label::before { background: var(--color-accent); }
+
 /* Scroll Reveal */
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; }
 .reveal.revealed { opacity: 1; transform: translateY(0); }
@@ -458,6 +486,13 @@ p { color: var(--color-text-light); line-height: 1.8; }
   .consent-block { padding: 12px 14px; margin-bottom: 14px; }
   .consent-label { font-size: 0.75rem; line-height: 1.5; }
   .form-group { margin-bottom: 12px; }
+
+  /* HELOC mobile */
+  .heloc-progress-wrap { padding: 12px 16px 0; }
+  .heloc-breadcrumbs { gap: 2px; margin-bottom: 8px; }
+  .heloc-breadcrumb { font-size: 0.65rem; padding: 3px 6px; }
+  .heloc-quick-amounts { gap: 6px; }
+  .heloc-quick-btn { padding: 6px 12px; font-size: 0.76rem; }
 
   .calc-main { padding: 28px; }
   .calc-inputs { grid-template-columns: 1fr; }

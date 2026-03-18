@@ -3,6 +3,7 @@ import ScrollToTop from './components/ScrollToTop';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Funnel from './pages/Funnel';
+import HelocFunnel from './pages/HelocFunnel';
 import Home from './pages/Home';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
@@ -14,6 +15,10 @@ export default function App() {
         {/* Funnel is the main landing page */}
         <Route path="/" element={<Funnel />} />
         <Route path="/get-started" element={<Funnel />} />
+
+        {/* HELOC Funnel */}
+        <Route path="/heloc" element={<HelocFunnel />} />
+        <Route path="/heloc/get-started" element={<HelocFunnel />} />
 
         {/* Legal pages keep header/footer */}
         <Route
