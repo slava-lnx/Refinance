@@ -17,7 +17,10 @@ function parseCurrencyToNumber(formatted) {
 }
 
 function formatPhone(raw) {
-  const digits = raw.replace(/\D/g, '').slice(0, 10);
+  let digits = raw.replace(/\D/g, '');
+  // Strip leading country code 1
+  if (digits.length > 10 && digits.startsWith('1')) digits = digits.slice(1);
+  digits = digits.slice(0, 10);
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
@@ -367,7 +370,8 @@ const ALL_STEPS = [
     type: 'form',
     fields: [
       { name: 'address', label: 'Street Address', type: 'text', placeholder: '123 Main St', autoComplete: 'off', enterKeyHint: 'next' },
-      { name: 'zip_code', label: 'ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'done' },
+      { name: 'address2', label: 'Apt / Unit #', type: 'text', placeholder: '', autoComplete: 'address-line2', enterKeyHint: 'next', optional: true, row: 'apt-zip' },
+      { name: 'zip_code', label: 'ZIP Code', type: 'text', placeholder: '90210', maxLength: 5, autoComplete: 'postal-code', inputMode: 'numeric', enterKeyHint: 'done', row: 'apt-zip' },
     ],
   },
   {
@@ -572,55 +576,78 @@ function HelocAmountStep({ formData, onChange }) {
    Form Step
    ============================================================ */
 
-function FormStep({ step, formData, onChange, onBlur, errors = {}, validated = {}, emailSuggestion, onAcceptEmailSuggestion, firstFieldRef }) {
+function FieldInput({ field, idx, formData, onChange, onBlur, errors, validated, emailSuggestion, onAcceptEmailSuggestion, firstFieldRef }) {
+  const hasError = !!errors[field.name];
+  const isValid = !hasError && !!validated[field.name];
   return (
-    <>
-      {step.fields.map((field, idx) => {
-        const hasError = !!errors[field.name];
-        const isValid = !hasError && !!validated[field.name];
-        return (
-          <div key={field.name} className={`form-group${hasError ? ' has-error' : ''}${isValid ? ' has-valid' : ''}`}>
-            <label htmlFor={`field-${field.name}`}>{field.label}</label>
-            <div className="input-wrap">
-              <input
-                ref={idx === 0 ? firstFieldRef : undefined}
-                id={`field-${field.name}`}
-                type={field.type}
-                placeholder={field.placeholder}
-                maxLength={field.maxLength}
-                value={formData[field.name] || ''}
-                onChange={e => onChange(field.name, e.target.value)}
-                onBlur={() => onBlur(field.name)}
-                autoComplete={field.autoComplete || 'off'}
-                inputMode={field.inputMode}
-                enterKeyHint={field.enterKeyHint}
-                aria-invalid={hasError ? 'true' : undefined}
-                aria-describedby={hasError ? `error-${field.name}` : undefined}
-                style={hasError ? { borderColor: '#EF4444' } : isValid ? { borderColor: '#10B981' } : undefined}
-              />
-              {isValid && (
-                <span className="field-valid-check" aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </span>
-              )}
-            </div>
-            {hasError && (
-              <span id={`error-${field.name}`} className="field-error" role="alert">
-                {errors[field.name]}
-              </span>
-            )}
-            {field.name === 'email' && emailSuggestion && !hasError && (
-              <button type="button" className="email-suggestion" onClick={onAcceptEmailSuggestion}>
-                {emailSuggestion}
-              </button>
-            )}
-          </div>
-        );
-      })}
-    </>
+    <div className={`form-group${hasError ? ' has-error' : ''}${isValid ? ' has-valid' : ''}`} style={field.row ? { flex: field.name === 'zip_code' ? '0 0 40%' : '1 1 55%' } : undefined}>
+      <label htmlFor={`field-${field.name}`}>{field.label}</label>
+      <div className="input-wrap">
+        <input
+          ref={idx === 0 ? firstFieldRef : undefined}
+          id={`field-${field.name}`}
+          type={field.type}
+          placeholder={field.placeholder}
+          maxLength={field.maxLength}
+          value={formData[field.name] || ''}
+          onChange={e => onChange(field.name, e.target.value)}
+          onBlur={() => onBlur(field.name)}
+          autoComplete={field.autoComplete || 'off'}
+          inputMode={field.inputMode}
+          enterKeyHint={field.enterKeyHint}
+          aria-invalid={hasError ? 'true' : undefined}
+          aria-describedby={hasError ? `error-${field.name}` : undefined}
+          style={hasError ? { borderColor: '#EF4444' } : isValid ? { borderColor: '#10B981' } : undefined}
+        />
+        {isValid && (
+          <span className="field-valid-check" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </span>
+        )}
+      </div>
+      {hasError && (
+        <span id={`error-${field.name}`} className="field-error" role="alert">
+          {errors[field.name]}
+        </span>
+      )}
+      {field.name === 'email' && emailSuggestion && !hasError && (
+        <button type="button" className="email-suggestion" onClick={onAcceptEmailSuggestion}>
+          {emailSuggestion}
+        </button>
+      )}
+    </div>
   );
+}
+
+function FormStep({ step, formData, onChange, onBlur, errors = {}, validated = {}, emailSuggestion, onAcceptEmailSuggestion, firstFieldRef }) {
+  const elements = [];
+  let i = 0;
+  while (i < step.fields.length) {
+    const field = step.fields[i];
+    if (field.row) {
+      const rowFields = [];
+      const rowName = field.row;
+      while (i < step.fields.length && step.fields[i].row === rowName) {
+        rowFields.push(step.fields[i]);
+        i++;
+      }
+      elements.push(
+        <div key={`row-${rowName}`} style={{ display: 'flex', gap: 12 }}>
+          {rowFields.map(f => (
+            <FieldInput key={f.name} field={f} idx={-1} formData={formData} onChange={onChange} onBlur={onBlur} errors={errors} validated={validated} emailSuggestion={emailSuggestion} onAcceptEmailSuggestion={onAcceptEmailSuggestion} firstFieldRef={undefined} />
+          ))}
+        </div>
+      );
+    } else {
+      elements.push(
+        <FieldInput key={field.name} field={field} idx={i} formData={formData} onChange={onChange} onBlur={onBlur} errors={errors} validated={validated} emailSuggestion={emailSuggestion} onAcceptEmailSuggestion={onAcceptEmailSuggestion} firstFieldRef={i === 0 ? firstFieldRef : undefined} />
+      );
+      i++;
+    }
+  }
+  return <>{elements}</>;
 }
 
 
@@ -636,9 +663,9 @@ const SOCIAL_PROOF_MESSAGES = {
   'employment-status': 'All employment types welcome',
   'own-home': null,
   'time-at-residence': null,
-  'dob': 'Your information is protected with 256-bit encryption',
+  'dob': null,
   'zip': null,
-  'contact': 'Your info is protected with 256-bit encryption',
+  'contact': null,
 };
 
 function SocialProof({ stepId }) {
@@ -654,7 +681,7 @@ function SocialProof({ stepId }) {
         </div>
         <div className="funnel-stat-divider" aria-hidden="true" />
         <div className="funnel-stat">
-          <strong>4.9\u2605</strong>
+          <strong>4.9 ★</strong>
           <span>Avg Rating</span>
         </div>
         <div className="funnel-stat-divider" aria-hidden="true" />
@@ -676,17 +703,6 @@ function SocialProof({ stepId }) {
   );
 }
 
-function LenderLogos() {
-  return (
-    <div className="lender-logos">
-      <span className="lender-logos-label">Trusted by</span>
-      <span className="lender-logo-item">Figure</span>
-      <span className="lender-logo-item">Spring EQ</span>
-      <span className="lender-logo-item">Bethpage FCU</span>
-      <span className="lender-logo-item">+ more</span>
-    </div>
-  );
-}
 
 /* ============================================================
    Trust Badges
@@ -705,7 +721,7 @@ function TrustBadges() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
-        <span>Won't affect your credit</span>
+        <span>Free Quote won't affect your credit</span>
       </div>
       <div className="trust-badge">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -1285,13 +1301,61 @@ export default function HelocFunnel() {
 
   const STEPS = getActiveSteps(formData);
 
+  // ── Funnel Analytics ──
+  const analyticsRef = useRef({
+    sessionId: `heloc_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    funnelStart: Date.now(),
+    stepStart: Date.now(),
+    stepsCompleted: 0,
+  });
+
+  const logFunnelEvent = useCallback((event, stepId, stepIndex) => {
+    const a = analyticsRef.current;
+    const now = Date.now();
+    const payload = {
+      event,
+      funnel: 'heloc',
+      sessionId: a.sessionId,
+      step: stepId,
+      stepIndex,
+      totalSteps: STEPS.length,
+      timeOnStep: now - a.stepStart,
+      totalTime: now - a.funnelStart,
+      stepsCompleted: a.stepsCompleted,
+      userAgent: navigator.userAgent,
+    };
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/log-funnel', JSON.stringify(payload));
+      } else {
+        fetch('/api/log-funnel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), keepalive: true });
+      }
+    } catch { /* never block user */ }
+  }, [STEPS.length]);
+
+  // Log drop-off on page unload
+  useEffect(() => {
+    const handleUnload = () => {
+      if (!submitted && !processing) {
+        logFunnelEvent('drop_off', STEPS[currentStep]?.id, currentStep);
+      }
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [currentStep, submitted, processing, logFunnelEvent, STEPS]);
+
   const goTo = useCallback((idx) => {
+    if (idx > currentStep) {
+      analyticsRef.current.stepsCompleted = Math.max(analyticsRef.current.stepsCompleted, currentStep + 1);
+      logFunnelEvent('step_complete', STEPS[currentStep]?.id, currentStep);
+    }
+    analyticsRef.current.stepStart = Date.now();
     setSlideDir(idx > currentStep ? 'forward' : 'back');
     setAnimKey(k => k + 1);
     setCurrentStep(idx);
     setFieldErrors({});
     setValidatedFields({});
-  }, [currentStep]);
+  }, [currentStep, logFunnelEvent, STEPS]);
 
   // Persist progress
   useEffect(() => {
@@ -1422,15 +1486,20 @@ export default function HelocFunnel() {
       let streetNumber = '';
       let route = '';
       let zip = '';
+      let city = '';
+      let state = '';
 
       for (const component of place.address_components) {
         const type = component.types[0];
         if (type === 'street_number') streetNumber = component.long_name;
         else if (type === 'route') route = component.short_name;
         else if (type === 'postal_code') zip = component.long_name;
+        else if (type === 'locality') city = component.long_name;
+        else if (type === 'administrative_area_level_1') state = component.short_name;
       }
 
-      const streetAddress = streetNumber ? `${streetNumber} ${route}` : route;
+      const streetBase = streetNumber ? `${streetNumber} ${route}` : route;
+      const streetAddress = [streetBase, city, state].filter(Boolean).join(', ');
 
       setFormData(prev => ({
         ...prev,
@@ -1567,7 +1636,7 @@ export default function HelocFunnel() {
       own_home: formData['own-home'] || 'Homeowner',
       time_at_residence: formData['time-at-residence'] || 'More 3 years',
       dob: formData['dob'],
-      address: formData['address'],
+      address: formData['address2'] ? `${formData['address']} ${formData['address2']}` : formData['address'],
       zip_code: formData['zip_code'],
       first_name: formData['first_name'],
       last_name: formData['last_name'],
@@ -1612,6 +1681,8 @@ export default function HelocFunnel() {
         await new Promise(resolve => setTimeout(resolve, 5000 - elapsed));
       }
 
+      analyticsRef.current.stepsCompleted = STEPS.length;
+      logFunnelEvent('funnel_complete', 'submitted', STEPS.length - 1);
       setProcessing(false);
       setSubmitted(true);
       setSubmitting(false);
@@ -1659,6 +1730,17 @@ export default function HelocFunnel() {
 
   return (
     <form className="funnel-page heloc-funnel" onSubmit={e => e.preventDefault()} id="leadform">
+      <div className="funnel-header">
+        <Link to="/heloc" className="logo funnel-logo-static">
+          <div className="logo-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+              <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+          </div>
+          GetMyRefinance
+        </Link>
+      </div>
       {/* Hidden compliance inputs */}
       <input type="hidden" name="xxTrustedFormCertUrl" />
       <input type="hidden" name="SR_TOKEN" />
@@ -1706,9 +1788,9 @@ export default function HelocFunnel() {
               ) : step.type === 'slider-home-value' ? (
                 <SliderStep fieldName="home_value" formData={formData} onChange={handleFieldChange} min={80000} max={2000000} step={10000} label="Estimated home value" defaultValue={350000} />
               ) : step.type === 'slider-mortgage-balance' ? (
-                <SliderStep fieldName="mortgage_balance" formData={formData} onChange={handleFieldChange} min={10000} max={2000000} step={5000} label="Mortgage balance" defaultValue={200000} />
+                <SliderStep fieldName="mortgage_balance" formData={formData} onChange={handleFieldChange} min={10000} max={parseCurrencyToNumber(formData['home_value'] || '$350000') || 2000000} step={5000} label="Mortgage balance" defaultValue={Math.round((parseCurrencyToNumber(formData['home_value'] || '$350000') || 350000) * 0.6 / 5000) * 5000} />
               ) : step.type === 'slider-mortgage-balance-2' ? (
-                <SliderStep fieldName="mortgage_balance_2" formData={formData} onChange={handleFieldChange} min={5000} max={500000} step={5000} label="Second mortgage balance" defaultValue={50000} />
+                <SliderStep fieldName="mortgage_balance_2" formData={formData} onChange={handleFieldChange} min={5000} max={parseCurrencyToNumber(formData['home_value'] || '$350000') || 500000} step={5000} label="Second mortgage balance" defaultValue={50000} />
               ) : step.type === 'slider-income' ? (
                 <SliderStep fieldName="annual_income" formData={formData} onChange={handleFieldChange} min={10000} max={500000} step={5000} label="Annual pre-tax income" defaultValue={75000} />
               ) : step.type === 'options' ? (
@@ -1728,7 +1810,7 @@ export default function HelocFunnel() {
               )}
 
               {/* Lender logos + Trust badges on final step */}
-              {isLast && <LenderLogos />}
+              {/* LenderLogos removed */}
               {isLast && <TrustBadges />}
 
               {/* Error summary for screen readers */}
@@ -1787,6 +1869,38 @@ export default function HelocFunnel() {
           )}
         </div>
       </div>
+    <div style={{ borderTop: '1px solid #d5d4d4', padding: '12px 24px 20px', maxWidth: 600, margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginBottom: 14, flexWrap: 'wrap' }}>
+        <Link to="/terms-of-service" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#848282', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>Terms of Use</Link>
+        <span style={{ color: '#d5d4d4' }}>|</span>
+        <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.75rem', color: '#848282', textDecoration: 'none' }} onMouseEnter={e => e.currentTarget.style.textDecoration = 'underline'} onMouseLeave={e => e.currentTarget.style.textDecoration = 'none'}>Privacy Policy</Link>
+      </div>
+      <p style={{ fontSize: '0.7rem', color: '#848282', lineHeight: 1.7, textAlign: 'center' }}>
+        By using this site, you agree to: (1) our{' '}
+        <Link to="/terms-of-service" target="_blank" rel="noopener noreferrer" style={{ color: '#848282', textDecoration: 'underline' }}>TERMS OF USE</Link>, which include a Class Waiver
+        and Mandatory Arbitration Agreement, (2) our{' '}
+        <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: '#848282', textDecoration: 'underline' }}>PRIVACY POLICY</Link>, and (3) receive notices and
+        other COMMUNICATIONS ELECTRONICALLY. By submitting your information, you: (a) provide your express
+        written consent and binding signature under the ESIGN Act for Evolute, Inc., a Delaware corporation,
+        to share your information with up to four (4) of its PREMIER PARTNERS and/or third parties acting
+        on their behalf to contact you via telephone, mobile device (including SMS and MMS) and/or email,
+        including but not limited to texts or calls made using an automated telephone dialing system,
+        AI-generated voice and text messages, or pre-recorded or artificial voice messages, regarding
+        financial services or other offers related to homeownership; (b) understand that your consent is
+        valid even if your telephone number is currently listed on any state, federal, local or corporate
+        Do Not Call list; (c) represent that you are the wireless subscriber or customary user of the
+        wireless number(s) provided with authority to consent; (d) understand your consent is not required
+        in order to obtain any good or service; (e) represent that you have received and reviewed the
+        MORTGAGE BROKER DISCLOSURES for your state; and (f) provide your consent under the Fair Credit
+        Reporting Act for Evolute, Inc. and/or its PREMIER PARTNERS to obtain information from your
+        personal credit profile to prequalify you for credit options and connect you with an appropriate
+        partner. You may choose to speak with an individual service provider by dialing 844-326-3442.
+        Evolute, Inc. NMLS 2781584.
+      </p>
+      <p style={{ fontSize: '0.7rem', color: '#848282', lineHeight: 1.7, textAlign: 'center', marginTop: 10 }}>
+        GetMyRefinance is not acting as a lender or broker. The information provided is not an application for a mortgage loan. If contacted by a lender in our network, your quoted rate may vary depending on your property location, credit score, loan-to-value ratio, and other factors. Not all loan products are available in all states. Equal Housing Opportunity.
+      </p>
+    </div>
     </form>
   );
 }
