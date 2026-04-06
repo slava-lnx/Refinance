@@ -136,8 +136,6 @@ export default async function handler(req, res) {
       PropertyUse: PROPERTY_USE_MAP[body.property_use] || 'Primary Residence',
       PropertyValue: String(propertyValue),
       MortgageStatus: MORTGAGE_STATUS_MAP[body.existing_mortgages] || 'No',
-      MortgageBalance1: String(mortgageBalance1),
-      MortgageBalance2: String(mortgageBalance2),
 
       // Personal info
       Military: body.va_status === 'YES' ? 'Yes' : 'No',
@@ -163,6 +161,15 @@ export default async function handler(req, res) {
       // Consent
       PhoneConsentLang: 'TCPA',
     };
+
+    // Only include mortgage balances when the user actually has mortgages
+    // QuinStreet rejects values outside $10,000-$2,000,000
+    if (body.existing_mortgages === 'one' || body.existing_mortgages === 'two') {
+      qsPayload.MortgageBalance1 = String(Math.max(mortgageBalance1, 10000));
+    }
+    if (body.existing_mortgages === 'two') {
+      qsPayload.MortgageBalance2 = String(Math.max(mortgageBalance2, 10000));
+    }
 
     // Compliance tokens — use LeadIdToken or ap_token (at least one required)
     if (body.srToken) {

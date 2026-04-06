@@ -548,7 +548,7 @@ function HelocAmountStep({ formData, onChange }) {
       <input
         type="range"
         min={5000}
-        max={500000}
+        max={750000}
         step={5000}
         value={rawValue}
         onChange={handleSlider}
@@ -1795,7 +1795,7 @@ export default function HelocFunnel() {
               ) : step.type === 'slider-mortgage-balance' ? (
                 <SliderStep fieldName="mortgage_balance" formData={formData} onChange={handleFieldChange} min={10000} max={parseCurrencyToNumber(formData['home_value'] || '$350000') || 2000000} step={5000} label="Mortgage balance" defaultValue={Math.round((parseCurrencyToNumber(formData['home_value'] || '$350000') || 350000) * 0.6 / 5000) * 5000} />
               ) : step.type === 'slider-mortgage-balance-2' ? (
-                <SliderStep fieldName="mortgage_balance_2" formData={formData} onChange={handleFieldChange} min={5000} max={parseCurrencyToNumber(formData['home_value'] || '$350000') || 500000} step={5000} label="Second mortgage balance" defaultValue={50000} />
+                <SliderStep fieldName="mortgage_balance_2" formData={formData} onChange={handleFieldChange} min={10000} max={parseCurrencyToNumber(formData['home_value'] || '$350000') || 500000} step={5000} label="Second mortgage balance" defaultValue={50000} />
               ) : step.type === 'slider-income' ? (
                 <SliderStep fieldName="annual_income" formData={formData} onChange={handleFieldChange} min={10000} max={500000} step={5000} label="Annual pre-tax income" defaultValue={75000} />
               ) : step.type === 'options' ? (
