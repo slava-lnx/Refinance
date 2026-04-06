@@ -32,6 +32,7 @@ const HELOC_PURPOSE_MAP = {
   'renovation': 'Home Renovation',
   'consolidate': 'Debt Consolidation',
   'investment': 'Investment Purposes',
+  'retirement': 'Retirement Income',
   'cash': 'Personal',
   'other': 'Personal',
 };
@@ -198,8 +199,7 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': QS_AUTH,
-        'Token': QS_TOKEN,
+        'Authorization': `${QS_AUTH} Token ${QS_TOKEN}`,
         'True-Client-IP': clientIP,
         'User-Agent': userAgent,
       },
