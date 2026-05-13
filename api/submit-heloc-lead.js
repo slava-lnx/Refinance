@@ -3,6 +3,8 @@
    POST /api/submit-heloc-lead
    ============================================================ */
 
+import { saveLead } from './_db.js';
+
 // Environment variables — set in Vercel dashboard
 const QS_STAGE_URL = 'https://guidetolenders.quinstage.com/plpost.jsp';
 const QS_URL = process.env.QS_HELOC_URL || QS_STAGE_URL;
@@ -235,6 +237,48 @@ export default async function handler(req, res) {
     // Normalize response for frontend
     const normalized = normalizeResponse(qsResult, body);
     console.log('NORMALIZED:', JSON.stringify(normalized, null, 2));
+
+    // Save lead to database
+    try {
+      const dbId = await saveLead({
+        funnel: 'heloc',
+        first_name: (body.first_name || '').trim(),
+        last_name: (body.last_name || '').trim(),
+        email: (body.email || '').trim().toLowerCase(),
+        phone: String(body.phone || '').replace(/\D/g, ''),
+        address: (body.address || '').trim(),
+        city,
+        state,
+        zip_code: zip,
+        property_type: body.property_type || null,
+        property_use: body.property_use || null,
+        home_value: propertyValue,
+        mortgage_balance: mortgageBalance1,
+        credit_score: body.credit || null,
+        va_status: body.va_status || null,
+        bankruptcy: body.bankruptcy || null,
+        heloc_amount: cashOut,
+        heloc_purpose: body.heloc_purpose || null,
+        annual_income: income,
+        existing_mortgages: body.existing_mortgages || null,
+        mortgage_balance_2: mortgageBalance2 || null,
+        employment_status: body.employment_status || null,
+        own_home: body.own_home || null,
+        time_at_residence: body.time_at_residence || null,
+        dob: body.dob || null,
+        lead_status: normalized.status,
+        lead_id: normalized.leadId || null,
+        lead_revenue: normalized.commission || null,
+        num_buyers: normalized.buyers?.length || 0,
+        ip_address: clientIP,
+        user_agent: userAgent,
+        trusted_form_url: body.trustedFormCertUrl || null,
+        sr_token: body.srToken || null,
+      });
+      console.log('[DB] HELOC lead saved, id:', dbId);
+    } catch (dbErr) {
+      console.error('[DB] Failed to save HELOC lead:', dbErr.message);
+    }
 
     return res.status(200).json(normalized);
   } catch (err) {

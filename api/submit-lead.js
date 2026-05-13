@@ -3,6 +3,8 @@
    POST /api/submit-lead
    ============================================================ */
 
+import { saveLead } from './_db.js';
+
 const LEADPOINT_URL = process.env.LEADPOINT_POST_URL || 'https://www.leadpointdelivery.com/20994/direct.ilp';
 const AID = process.env.LEADPOINT_AID || '38212';
 const TEST_MODE = process.env.LEADPOINT_TEST_MODE || '';
@@ -263,6 +265,43 @@ export default async function handler(req, res) {
 
     const parsed = parseLeadPointXML(xmlText);
     console.log('PARSED:', JSON.stringify(parsed, null, 2));
+
+    // Save lead to database (non-blocking — don't let DB errors break the response)
+    try {
+      const dbId = await saveLead({
+        funnel: 'refi',
+        first_name: (body.first_name || '').trim(),
+        last_name: (body.last_name || '').trim(),
+        email: (body.email || '').trim().toLowerCase(),
+        phone: String(body.phone || '').replace(/\D/g, ''),
+        address: (body.address || '').trim(),
+        city,
+        state,
+        zip_code: zip,
+        goal: body.goal || null,
+        property_type: body.property_type || null,
+        home_value: parseCurrency(body.home_value),
+        mortgage_balance: parseCurrency(body.mortgage_balance),
+        additional_cash: parseCurrency(body.additional_cash),
+        credit_score: body.credit || null,
+        va_status: body.va_status || null,
+        fha_loan: body.fha_loan || null,
+        income_proof: body.income_proof || null,
+        bankruptcy: body.bankruptcy || null,
+        mortgage_lates: body.mortgage_lates || null,
+        lead_status: parsed.status,
+        lead_id: parsed.leadId || null,
+        lead_revenue: parsed.amount || null,
+        num_buyers: parsed.numBuyers || 0,
+        ip_address: clientIP,
+        user_agent: req.headers['user-agent'] || null,
+        trusted_form_url: body.trustedFormCertUrl || null,
+        sr_token: body.srToken || null,
+      });
+      console.log('[DB] Lead saved, id:', dbId);
+    } catch (dbErr) {
+      console.error('[DB] Failed to save lead:', dbErr.message);
+    }
 
     return res.status(200).json(parsed);
   } catch (err) {

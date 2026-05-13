@@ -734,76 +734,8 @@ function ProcessingScreen() {
    Partner Offers (Gold Status Link-Out)
    ============================================================ */
 
-const PARTNER_OFFERS = [
-  {
-    category: 'Debt Relief',
-    title: 'National Debt Relief',
-    description: 'Resolve your debt for a fraction of what you owe. Free consultation with no obligation.',
-    cta: 'Get Free Quote',
-    url: 'https://www.nationaldebtrelief.com',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-      </svg>
-    ),
-    badge: 'Popular',
-  },
-  {
-    category: 'Home Insurance',
-    title: 'Compare Home Insurance',
-    description: 'Save up to 40% on homeowners insurance. Compare rates from top providers in minutes.',
-    cta: 'Compare Rates',
-    url: 'https://www.policygenius.com/homeowners-insurance/',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-      </svg>
-    ),
-    badge: null,
-  },
-  {
-    category: 'Credit Monitoring',
-    title: 'Free Credit Score',
-    description: 'Monitor your credit score and get personalized tips to improve it. 100% free.',
-    cta: 'Check Your Score',
-    url: 'https://www.creditkarma.com',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-      </svg>
-    ),
-    badge: 'Free',
-  },
-  {
-    category: 'Personal Loans',
-    title: 'Personal Loan Offers',
-    description: 'Compare personal loan rates from multiple lenders. Rates as low as 5.99% APR.',
-    cta: 'See Offers',
-    url: 'https://www.sofi.com/personal-loans/',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-      </svg>
-    ),
-    badge: null,
-  },
-  {
-    category: 'Solar Savings',
-    title: 'Home Solar Estimate',
-    description: 'See how much you could save with solar panels. Free estimate based on your home.',
-    cta: 'Get Estimate',
-    url: 'https://www.energysage.com',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-      </svg>
-    ),
-    badge: null,
-  },
-];
-
 /* ============================================================
-   Results Screen (Gold Status)
+   Results Screen
    ============================================================ */
 
 function ResultsScreen({ result, formData, onRetry }) {
@@ -911,13 +843,13 @@ function ResultsScreen({ result, formData, onRetry }) {
   // Gold Status page — shown for all successful submissions
   return (
     <div style={{ padding: '10px 0' }}>
-      {/* Gold Status Header */}
+      {/* Success Confirmation Header */}
       <div style={{
         textAlign: 'center',
         background: 'linear-gradient(135deg, #D4AF37 0%, #F5D060 50%, #D4AF37 100%)',
         borderRadius: 'var(--radius-md)',
         padding: '24px 20px',
-        marginBottom: 24,
+        marginBottom: 20,
         color: '#1a1a2e',
       }}>
         <div style={{
@@ -925,41 +857,57 @@ function ResultsScreen({ result, formData, onRetry }) {
           background: 'rgba(255,255,255,0.25)', borderRadius: '50%',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="#1a1a2e" stroke="none">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a1a2e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: 6, color: '#1a1a2e' }}>
-          Congrats, {firstName}!
+        <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 6, color: '#1a1a2e' }}>
+          You're All Set, {firstName}!
         </h2>
-        <p style={{ fontSize: '1.05rem', fontWeight: 600, marginBottom: 4, color: '#1a1a2e' }}>
-          You've Unlocked Gold Status
-        </p>
-        <p style={{ fontSize: '0.85rem', opacity: 0.85, color: '#1a1a2e' }}>
+        <p style={{ fontSize: '0.92rem', fontWeight: 600, color: '#1a1a2e' }}>
           {isSuccess
-            ? 'Your refinance request has been submitted. Lenders will reach out soon.'
+            ? 'Your refinance request has been submitted successfully.'
             : status === 'UNMATCHED' || status === 'PENDING_MATCH'
-              ? 'No matches right now, but you have access to exclusive partner offers below.'
-              : 'Your request is being processed. In the meantime, explore exclusive partner offers.'}
+              ? 'Your request is being reviewed by our lending partners.'
+              : 'Your request is being processed.'}
         </p>
       </div>
 
-      {/* What happens next */}
-      {isSuccess && (
-        <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: 16, marginBottom: 20 }}>
-          <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: 8 }}>What happens next:</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {['Lenders will contact you within minutes', 'Compare their personalized rate offers', 'Choose the best option \u2014 zero obligation'].map((text, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ color: 'var(--color-success)', fontWeight: 700, fontSize: '0.9rem' }}>{'\u2713'}</span>
-                <span style={{ fontSize: '0.84rem', color: 'var(--color-text-light)' }}>{text}</span>
-              </div>
-            ))}
-          </div>
+      {/* What happens next — timeline style */}
+      <div style={{ background: 'var(--color-bg)', borderRadius: 'var(--radius-md)', padding: '16px 18px', marginBottom: 24 }}>
+        <p style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: 12 }}>
+          Here's what to expect:
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {[
+            { icon: '\u{1F4F1}', text: 'Lenders will call or text you within minutes' },
+            { icon: '\u{1F4CA}', text: 'You\'ll receive personalized rate offers to compare' },
+            { icon: '\u2705', text: 'Pick the best deal \u2014 zero obligation, zero cost' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <span style={{ fontSize: '1.1rem', flexShrink: 0 }}>{item.icon}</span>
+              <span style={{ fontSize: '0.84rem', color: 'var(--color-text-light)', lineHeight: 1.4 }}>{item.text}</span>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* MAO Click Wall — Sponsored Refinance Listings */}
+      {/* Transition CTA to MAO listings */}
+      <div style={{
+        textAlign: 'center', padding: '14px 16px', marginBottom: 16,
+        background: 'linear-gradient(135deg, #EEF2FF 0%, #F0F9FF 100%)',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid #C7D2FE',
+      }}>
+        <p style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
+          While you wait, compare more lenders
+        </p>
+        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', lineHeight: 1.4 }}>
+          Smart borrowers compare 3-5 offers to save an average of $1,200/year
+        </p>
+      </div>
+
+      {/* MAO Click Wall */}
       {maoLoading ? (
         <div style={{ textAlign: 'center', padding: '24px 0' }}>
           <div style={{
@@ -968,23 +916,10 @@ function ResultsScreen({ result, formData, onRetry }) {
             margin: '0 auto 12px',
             animation: 'spinLoader 0.8s linear infinite',
           }} />
-          <p style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)' }}>Loading personalized offers...</p>
+          <p style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)' }}>Finding lenders in your area...</p>
         </div>
-      ) : maoListings.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
-          <p style={{
-            textAlign: 'center', fontSize: '0.92rem', fontWeight: 700,
-            color: 'var(--color-text)', marginBottom: 4,
-          }}>
-            Top Refinance Offers For You
-          </p>
-          <p style={{
-            textAlign: 'center', fontSize: '0.8rem',
-            color: 'var(--color-text-muted)', marginBottom: 16,
-          }}>
-            Matched to your profile — click to learn more
-          </p>
-
+      ) : maoListings.length > 0 ? (
+        <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {maoListings.map((item, i) => (
               <a
@@ -993,7 +928,6 @@ function ResultsScreen({ result, formData, onRetry }) {
                 target="_blank"
                 rel="noopener noreferrer sponsored"
                 onClick={() => {
-                  // Fire tracking pixel on click if available
                   if (item.trackingURL) {
                     const img = new Image();
                     img.src = item.trackingURL;
@@ -1002,30 +936,31 @@ function ResultsScreen({ result, formData, onRetry }) {
                 style={{
                   display: 'flex', gap: 14, alignItems: 'flex-start',
                   padding: '16px', borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--color-border)',
+                  border: i === 0 ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
                   background: '#fff', textDecoration: 'none', color: 'inherit',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   cursor: 'pointer',
                   position: 'relative',
+                  boxShadow: i === 0 ? '0 2px 12px rgba(37, 99, 235, 0.1)' : 'none',
                 }}
                 onMouseEnter={e => {
                   e.currentTarget.style.borderColor = 'var(--color-primary)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)';
                 }}
                 onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'var(--color-border)';
-                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.borderColor = i === 0 ? 'var(--color-primary)' : 'var(--color-border)';
+                  e.currentTarget.style.boxShadow = i === 0 ? '0 2px 12px rgba(37, 99, 235, 0.1)' : 'none';
                 }}
               >
                 {i === 0 && (
                   <span style={{
-                    position: 'absolute', top: -8, right: 12,
-                    background: 'var(--color-secondary)',
-                    color: '#fff', fontSize: '0.65rem', fontWeight: 700,
-                    padding: '2px 8px', borderRadius: 10, textTransform: 'uppercase',
+                    position: 'absolute', top: -10, left: 16,
+                    background: 'var(--color-primary)',
+                    color: '#fff', fontSize: '0.68rem', fontWeight: 700,
+                    padding: '3px 10px', borderRadius: 10, textTransform: 'uppercase',
                     letterSpacing: '0.5px',
                   }}>
-                    Top Match
+                    Best Match
                   </span>
                 )}
                 <div style={{ flexShrink: 0, marginTop: 2 }}>
@@ -1033,13 +968,13 @@ function ResultsScreen({ result, formData, onRetry }) {
                     <img
                       src={item.imageUrl}
                       alt={item.brandName || item.advertiserName || ''}
-                      style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'contain', background: '#f5f5f5' }}
+                      style={{ width: 44, height: 44, borderRadius: 8, objectFit: 'contain', background: '#f5f5f5' }}
                     />
                   ) : (
                     <div style={{
-                      width: 40, height: 40, borderRadius: 8, background: 'var(--color-primary)',
+                      width: 44, height: 44, borderRadius: 8, background: 'var(--color-primary)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontWeight: 700, fontSize: '1rem',
+                      color: '#fff', fontWeight: 700, fontSize: '1.1rem',
                     }}>
                       {(item.brandName || item.advertiserName || '?').charAt(0)}
                     </div>
@@ -1053,7 +988,7 @@ function ResultsScreen({ result, formData, onRetry }) {
                     {item.displayName || item.brandName || 'Refinance Offer'}
                   </p>
                   {item.blurbs && item.blurbs.length > 0 && (
-                    <div style={{ marginBottom: 8 }}>
+                    <div style={{ marginBottom: 10 }}>
                       {item.blurbs.slice(0, 3).map((blurb, bi) => (
                         <p key={bi} style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', lineHeight: 1.4, marginBottom: 2, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
                           <span style={{ color: 'var(--color-success)', flexShrink: 0 }}>{'\u2713'}</span>
@@ -1063,110 +998,38 @@ function ResultsScreen({ result, formData, onRetry }) {
                     </div>
                   )}
                   <span style={{
-                    display: 'inline-block', fontSize: '0.82rem', fontWeight: 600,
-                    color: '#fff', padding: '8px 20px',
-                    background: 'var(--color-primary)',
+                    display: 'inline-block', fontSize: '0.84rem', fontWeight: 600,
+                    color: '#fff', padding: '10px 24px',
+                    background: i === 0 ? 'var(--color-primary)' : 'var(--color-text)',
                     borderRadius: 'var(--radius-sm)',
                   }}>
-                    {item.ctaLabel || 'View Offer'} {'\u2192'}
+                    {item.ctaLabel || 'View My Rate'} {'\u2192'}
                   </span>
                 </div>
               </a>
             ))}
           </div>
-
-          <p style={{
-            textAlign: 'center', fontSize: '0.68rem',
-            color: 'var(--color-text-muted)', marginTop: 8,
-            fontStyle: 'italic',
-          }}>
-            Sponsored listings — we may earn a commission when you click
+        </div>
+      ) : (
+        <div style={{
+          textAlign: 'center', padding: '20px 16px', marginBottom: 20,
+          background: 'var(--color-bg)', borderRadius: 'var(--radius-md)',
+        }}>
+          <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: 4 }}>
+            No additional offers available right now
+          </p>
+          <p style={{ fontSize: '0.82rem', color: 'var(--color-text-light)' }}>
+            Sit tight — your matched lenders will be in touch shortly.
           </p>
         </div>
       )}
 
-      {/* Partner Offers */}
-      <div style={{ marginBottom: 16 }}>
-        <p style={{
-          textAlign: 'center', fontSize: '0.92rem', fontWeight: 700,
-          color: 'var(--color-text)', marginBottom: 4,
-        }}>
-          {maoListings.length > 0 ? 'More Ways to Save' : 'Exclusive Gold Status Partner Offers'}
-        </p>
-        <p style={{
-          textAlign: 'center', fontSize: '0.8rem',
-          color: 'var(--color-text-muted)', marginBottom: 16,
-        }}>
-          Handpicked services to help you save more as a homeowner
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {PARTNER_OFFERS.map((offer, i) => (
-            <a
-              key={i}
-              href={offer.url}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              style={{
-                display: 'flex', gap: 14, alignItems: 'flex-start',
-                padding: '16px', borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-                background: '#fff', textDecoration: 'none', color: 'inherit',
-                transition: 'border-color 0.2s, box-shadow 0.2s',
-                cursor: 'pointer',
-                position: 'relative',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = 'var(--color-border)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              {offer.badge && (
-                <span style={{
-                  position: 'absolute', top: -8, right: 12,
-                  background: offer.badge === 'Free' ? 'var(--color-success)' : 'var(--color-secondary)',
-                  color: '#fff', fontSize: '0.65rem', fontWeight: 700,
-                  padding: '2px 8px', borderRadius: 10, textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}>
-                  {offer.badge}
-                </span>
-              )}
-              <div style={{ flexShrink: 0, marginTop: 2 }}>{offer.icon}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {offer.category}
-                </p>
-                <p style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
-                  {offer.title}
-                </p>
-                <p style={{ fontSize: '0.82rem', color: 'var(--color-text-light)', marginBottom: 8, lineHeight: 1.4 }}>
-                  {offer.description}
-                </p>
-                <span style={{
-                  display: 'inline-block', fontSize: '0.82rem', fontWeight: 600,
-                  color: 'var(--color-primary)', padding: '6px 16px',
-                  border: '1.5px solid var(--color-primary)',
-                  borderRadius: 'var(--radius-sm)',
-                }}>
-                  {offer.cta} {'\u2192'}
-                </span>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-
       <p style={{
-        textAlign: 'center', fontSize: '0.72rem',
-        color: 'var(--color-text-muted)', marginBottom: 16,
+        textAlign: 'center', fontSize: '0.68rem',
+        color: 'var(--color-text-muted)', marginBottom: 20,
         fontStyle: 'italic',
       }}>
-        Advertiser Disclosure: We may receive compensation when you click on partner links.
+        Advertiser Disclosure: Sponsored results. We may receive compensation when you click on offers above.
       </p>
 
       <div style={{ textAlign: 'center' }}>
