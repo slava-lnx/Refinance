@@ -807,6 +807,73 @@ const PARTNER_OFFERS = [
    ============================================================ */
 
 function ResultsScreen({ result, formData, onRetry }) {
+  const [maoListings, setMaoListings] = useState([]);
+  const [maoLoading, setMaoLoading] = useState(true);
+  const impressionsFired = useRef(new Set());
+
+  // Extract state abbreviation from address (e.g. "123 Main St, City, CA")
+  const extractState = (addr) => {
+    const match = String(addr || '').match(/,\s*([A-Z]{2})\s*$/);
+    return match ? match[1] : '';
+  };
+
+  // Fetch MAO listings on mount
+  useEffect(() => {
+    if (!result || (result.status !== 'OK' && result.status !== 'UNMATCHED' && result.status !== 'PENDING_MATCH' && result.status !== 'QUEUED')) {
+      setMaoLoading(false);
+      return;
+    }
+
+    const fetchListings = async () => {
+      try {
+        const params = {
+          zipcode: formData.zip_code || '',
+          state: extractState(formData.address),
+          creditscore: formData.credit || '',
+          loanbalance: formData.mortgage_balance || '',
+          propertyvalue: formData.home_value || '',
+          cashout: formData.goal || '',
+          militarystatus: formData['va-status'] || 'no',
+          propertytype: formData['property-type'] || '',
+          propertyuse: 'primary',
+          fname: formData.first_name || '',
+          lname: formData.last_name || '',
+          email: formData.email || '',
+          phone: formData.phone || '',
+          address: formData.address || '',
+          mediachannel: 'SEO',
+        };
+
+        const response = await fetch('/api/mao-listings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        });
+
+        const data = await response.json();
+        setMaoListings(data.items || []);
+      } catch (err) {
+        console.error('[MAO] Failed to fetch listings:', err);
+        setMaoListings([]);
+      } finally {
+        setMaoLoading(false);
+      }
+    };
+
+    fetchListings();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fire impression pixels for displayed listings
+  useEffect(() => {
+    maoListings.forEach(item => {
+      if (item.impressionUrl && !impressionsFired.current.has(item.itemId)) {
+        impressionsFired.current.add(item.itemId);
+        const img = new Image();
+        img.src = item.impressionUrl;
+      }
+    });
+  }, [maoListings]);
+
   if (!result) return null;
 
   const { status, message, errors } = result;
@@ -892,13 +959,139 @@ function ResultsScreen({ result, formData, onRetry }) {
         </div>
       )}
 
+      {/* MAO Click Wall — Sponsored Refinance Listings */}
+      {maoLoading ? (
+        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+          <div style={{
+            width: 36, height: 36, border: '3px solid var(--color-border)',
+            borderTopColor: 'var(--color-primary)', borderRadius: '50%',
+            margin: '0 auto 12px',
+            animation: 'spinLoader 0.8s linear infinite',
+          }} />
+          <p style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)' }}>Loading personalized offers...</p>
+        </div>
+      ) : maoListings.length > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <p style={{
+            textAlign: 'center', fontSize: '0.92rem', fontWeight: 700,
+            color: 'var(--color-text)', marginBottom: 4,
+          }}>
+            Top Refinance Offers For You
+          </p>
+          <p style={{
+            textAlign: 'center', fontSize: '0.8rem',
+            color: 'var(--color-text-muted)', marginBottom: 16,
+          }}>
+            Matched to your profile — click to learn more
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {maoListings.map((item, i) => (
+              <a
+                key={item.itemId || i}
+                href={item.destUrl}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                onClick={() => {
+                  // Fire tracking pixel on click if available
+                  if (item.trackingURL) {
+                    const img = new Image();
+                    img.src = item.trackingURL;
+                  }
+                }}
+                style={{
+                  display: 'flex', gap: 14, alignItems: 'flex-start',
+                  padding: '16px', borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border)',
+                  background: '#fff', textDecoration: 'none', color: 'inherit',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.borderColor = 'var(--color-primary)';
+                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                {i === 0 && (
+                  <span style={{
+                    position: 'absolute', top: -8, right: 12,
+                    background: 'var(--color-secondary)',
+                    color: '#fff', fontSize: '0.65rem', fontWeight: 700,
+                    padding: '2px 8px', borderRadius: 10, textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}>
+                    Top Match
+                  </span>
+                )}
+                <div style={{ flexShrink: 0, marginTop: 2 }}>
+                  {item.imageUrl ? (
+                    <img
+                      src={item.imageUrl}
+                      alt={item.brandName || item.advertiserName || ''}
+                      style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'contain', background: '#f5f5f5' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 8, background: 'var(--color-primary)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: '#fff', fontWeight: 700, fontSize: '1rem',
+                    }}>
+                      {(item.brandName || item.advertiserName || '?').charAt(0)}
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {item.brandName || 'Sponsored'}
+                  </p>
+                  <p style={{ fontSize: '0.92rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: 4 }}>
+                    {item.displayName || item.brandName || 'Refinance Offer'}
+                  </p>
+                  {item.blurbs && item.blurbs.length > 0 && (
+                    <div style={{ marginBottom: 8 }}>
+                      {item.blurbs.slice(0, 3).map((blurb, bi) => (
+                        <p key={bi} style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', lineHeight: 1.4, marginBottom: 2, display: 'flex', gap: 6, alignItems: 'flex-start' }}>
+                          <span style={{ color: 'var(--color-success)', flexShrink: 0 }}>{'\u2713'}</span>
+                          <span>{blurb}</span>
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                  <span style={{
+                    display: 'inline-block', fontSize: '0.82rem', fontWeight: 600,
+                    color: '#fff', padding: '8px 20px',
+                    background: 'var(--color-primary)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}>
+                    {item.ctaLabel || 'View Offer'} {'\u2192'}
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          <p style={{
+            textAlign: 'center', fontSize: '0.68rem',
+            color: 'var(--color-text-muted)', marginTop: 8,
+            fontStyle: 'italic',
+          }}>
+            Sponsored listings — we may earn a commission when you click
+          </p>
+        </div>
+      )}
+
       {/* Partner Offers */}
       <div style={{ marginBottom: 16 }}>
         <p style={{
           textAlign: 'center', fontSize: '0.92rem', fontWeight: 700,
           color: 'var(--color-text)', marginBottom: 4,
         }}>
-          Exclusive Gold Status Partner Offers
+          {maoListings.length > 0 ? 'More Ways to Save' : 'Exclusive Gold Status Partner Offers'}
         </p>
         <p style={{
           textAlign: 'center', fontSize: '0.8rem',
