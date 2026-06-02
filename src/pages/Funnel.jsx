@@ -1542,6 +1542,10 @@ export default function Funnel() {
     }
     setSubmitting(true);
 
+    // Affiliate tracking postback — fires on every submission attempt
+    const trackImg = new Image();
+    trackImg.src = 'https://www.lpjjm8trk.com/?nid=3527&transaction_id=&amount=0';
+
     // Gather third-party compliance tokens from DOM
     // TrustedForm and SecureRights scripts inject their own hidden inputs —
     // find the one with an actual value (skip any empty duplicates)

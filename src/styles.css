@@ -443,7 +443,22 @@ p { color: var(--color-text-light); line-height: 1.8; }
   .calc-cta-inner { grid-template-columns: 1fr; }
   .about-grid { grid-template-columns: 1fr; }
 }
-@media (max-width: 768px) {
+@media (min-width: 851px) and (max-width: 1023px) {
+  /* Compact-desktop tier for narrow laptop viewports (e.g. Macs at "Larger Text" scaling).
+     Keeps 2-col options but reduces padding, font sizes, and card width. */
+  .funnel-card { padding: 36px 32px; max-width: 560px; }
+  .funnel-card h2 { font-size: 1.35rem; margin-bottom: 6px; }
+  .funnel-card > p { font-size: 0.88rem; margin-bottom: 22px; }
+  .funnel-options { gap: 10px; margin-bottom: 22px; }
+  .funnel-option { padding: 16px; }
+  .funnel-option .option-icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .funnel-option .option-label { font-size: 0.85rem; }
+  .funnel-body { padding: 16px 20px 14px; }
+  .funnel-header { padding: 16px 20px; }
+  .funnel-progress { padding: 24px 20px 10px; }
+  .heloc-progress-wrap { padding: 14px 20px 0; }
+}
+@media (max-width: 850px) {
   .nav { display: none; }
   .nav.open { display: flex; flex-direction: column; position: absolute; top: 76px; left: 0; right: 0; background: #fff; padding: 16px; box-shadow: var(--shadow-lg); border-top: 1px solid var(--color-border-light); }
   .mobile-toggle { display: flex; }

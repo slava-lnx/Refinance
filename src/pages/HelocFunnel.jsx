@@ -1615,6 +1615,10 @@ export default function HelocFunnel() {
     }
     setSubmitting(true);
 
+    // Affiliate tracking postback — fires on every submission attempt
+    const trackImg = new Image();
+    trackImg.src = 'https://www.lpjjm8trk.com/?nid=3527&transaction_id=&amount=0';
+
     // Gather compliance tokens
     const trustedFormCertUrl = Array.from(document.querySelectorAll('input[name="xxTrustedFormCertUrl"]'))
       .map(el => el.value).find(v => v) || '';
